@@ -106,7 +106,7 @@ class InCallMenuView extends ViewGroup {
                 mContext.obtainStyledAttributes(com.android.internal.R.styleable.IconMenuView);
         if (DBG) log("- IconMenuView styled attrs: " + a);
         mRowHeight = a.getDimensionPixelSize(
-                com.android.internal.R.styleable.IconMenuView_rowHeight, 64);
+                com.android.internal.R.styleable.IconMenuView_rowHeight, 96);
         if (DBG) log("  - mRowHeight: " + mRowHeight);
         a.recycle();
 
