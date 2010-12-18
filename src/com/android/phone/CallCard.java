@@ -40,6 +40,7 @@ import com.android.internal.telephony.CallerInfo;
 import com.android.internal.telephony.CallerInfoAsyncQuery;
 import com.android.internal.telephony.Connection;
 import com.android.internal.telephony.Phone;
+import com.android.internal.telephony.CallManager;
 
 import java.util.List;
 
@@ -80,6 +81,7 @@ public class CallCard extends FrameLayout
     private int mTextColorConnectedBluetooth;
     private int mTextColorEnded;
     private int mTextColorOnHold;
+    private int mTextColorCallTypeSip;
 
     // The main block of info about the "primary" or "active" call,
     // including photo / name / phone number / etc.
@@ -88,6 +90,7 @@ public class CallCard extends FrameLayout
     private TextView mName;
     private TextView mPhoneNumber;
     private TextView mLabel;
+    private TextView mCallTypeLabel;
     private TextView mSocialStatus;
 
     // Info about the "secondary" call, which is the "call on hold" when
@@ -174,6 +177,7 @@ public class CallCard extends FrameLayout
                 getResources().getColor(R.color.incall_textConnectedBluetooth);
         mTextColorEnded = getResources().getColor(R.color.incall_textEnded);
         mTextColorOnHold = getResources().getColor(R.color.incall_textOnHold);
+        mTextColorCallTypeSip = getResources().getColor(R.color.incall_callTypeSip);
 
         // "Caller info" area, including photo / name / phone numbers / etc
         mPhoto = (ImageView) findViewById(R.id.photo);
@@ -182,6 +186,7 @@ public class CallCard extends FrameLayout
         mName = (TextView) findViewById(R.id.name);
         mPhoneNumber = (TextView) findViewById(R.id.phoneNumber);
         mLabel = (TextView) findViewById(R.id.label);
+        mCallTypeLabel = (TextView) findViewById(R.id.callTypeLabel);
         mSocialStatus = (TextView) findViewById(R.id.socialStatus);
 
         // "Other call" info area
@@ -197,8 +202,8 @@ public class CallCard extends FrameLayout
      * Updates the state of all UI elements on the CallCard, based on the
      * current state of the phone.
      */
-    void updateState(Phone phone) {
-        if (DBG) log("updateState(" + phone + ")...");
+    void updateState(CallManager cm) {
+        if (DBG) log("updateState(" + cm + ")...");
 
         // Update some internal state based on the current state of the phone.
 
@@ -207,60 +212,63 @@ public class CallCard extends FrameLayout
         // type of the CallCard, load up the main caller info area, and
         // load up and show or hide the "other call" area if necessary.
 
-        Phone.State state = phone.getState();  // IDLE, RINGING, or OFFHOOK
-        if (state == Phone.State.RINGING) {
-            // A phone call is ringing *or* call waiting
+        Phone.State state = cm.getState();  // IDLE, RINGING, or OFFHOOK
+        Call ringingCall = cm.getFirstActiveRingingCall();
+        Call fgCall = cm.getActiveFgCall();
+        Call bgCall = cm.getFirstActiveBgCall();
+
+        // If the FG call is dialing/alerting, we should display for that call
+        // and ignore the ringing call. This case happens when the telephony
+        // layer rejects the ringing call while the FG call is dialing/alerting,
+        // but the incoming call *does* briefly exist in the DISCONNECTING or
+        // DISCONNECTED state.
+        if ((ringingCall.getState() != Call.State.IDLE)
+                && !fgCall.getState().isDialing()) {
+            // A phone call is ringing, call waiting *or* being rejected
             // (ie. another call may also be active as well.)
-            updateRingingCall(phone);
-        } else if (state == Phone.State.OFFHOOK) {
-            // The phone is off hook. At least one call exists that is
-            // dialing, active, or holding, and no calls are ringing or waiting.
-            updateForegroundCall(phone);
+            updateRingingCall(cm);
+        } else if ((fgCall.getState() != Call.State.IDLE)
+                || (bgCall.getState() != Call.State.IDLE)) {
+            // We are here because either:
+            // (1) the phone is off hook. At least one call exists that is
+            // dialing, active, or holding, and no calls are ringing or waiting,
+            // or:
+            // (2) the phone is IDLE but a call just ended and it's still in
+            // the DISCONNECTING or DISCONNECTED state. In this case, we want
+            // the main CallCard to display "Hanging up" or "Call ended".
+            // The normal "foreground call" code path handles both cases.
+            updateForegroundCall(cm);
         } else {
-            // The phone state is IDLE!
+            // We don't have any DISCONNECTED calls, which means
+            // that the phone is *truly* idle.
             //
-            // The most common reason for this is if a call just
-            // ended: the phone will be idle, but we *will* still
-            // have a call in the DISCONNECTED state:
-            Call fgCall = phone.getForegroundCall();
-            Call bgCall = phone.getBackgroundCall();
-            if ((fgCall.getState() == Call.State.DISCONNECTED)
-                || (bgCall.getState() == Call.State.DISCONNECTED)) {
-                // In this case, we want the main CallCard to display
-                // the "Call ended" state.  The normal "foreground call"
-                // code path handles that.
-                updateForegroundCall(phone);
-            } else {
-                // We don't have any DISCONNECTED calls, which means
-                // that the phone is *truly* idle.
-                //
-                // It's very rare to be on the InCallScreen at all in this
-                // state, but it can happen in some cases:
-                // - A stray onPhoneStateChanged() event came in to the
-                //   InCallScreen *after* it was dismissed.
-                // - We're allowed to be on the InCallScreen because
-                //   an MMI or USSD is running, but there's no actual "call"
-                //   to display.
-                // - We're displaying an error dialog to the user
-                //   (explaining why the call failed), so we need to stay on
-                //   the InCallScreen so that the dialog will be visible.
-                //
-                // In these cases, put the callcard into a sane but "blank" state:
-                updateNoCall(phone);
-            }
+            // It's very rare to be on the InCallScreen at all in this
+            // state, but it can happen in some cases:
+            // - A stray onPhoneStateChanged() event came in to the
+            //   InCallScreen *after* it was dismissed.
+            // - We're allowed to be on the InCallScreen because
+            //   an MMI or USSD is running, but there's no actual "call"
+            //   to display.
+            // - We're displaying an error dialog to the user
+            //   (explaining why the call failed), so we need to stay on
+            //   the InCallScreen so that the dialog will be visible.
+            //
+            // In these cases, put the callcard into a sane but "blank" state:
+            updateNoCall(cm);
         }
     }
 
     /**
      * Updates the UI for the state where the phone is in use, but not ringing.
      */
-    private void updateForegroundCall(Phone phone) {
+    private void updateForegroundCall(CallManager cm) {
         if (DBG) log("updateForegroundCall()...");
+        if (DBG) PhoneUtils.dumpCallManager();
 
-        Call fgCall = phone.getForegroundCall();
-        Call bgCall = phone.getBackgroundCall();
+        Call fgCall = cm.getActiveFgCall();
+        Call bgCall = cm.getFirstActiveBgCall();
 
-        if (fgCall.isIdle() && !fgCall.hasConnections()) {
+        if (fgCall.getState() == Call.State.IDLE) {
             if (DBG) log("updateForegroundCall: no active call, show holding call");
             // TODO: make sure this case agrees with the latest UI spec.
 
@@ -274,21 +282,24 @@ public class CallCard extends FrameLayout
             bgCall = null;
         }
 
-        displayMainCallStatus(phone, fgCall);
+        displayMainCallStatus(cm, fgCall);
+
+        Phone phone = fgCall.getPhone();
 
         int phoneType = phone.getPhoneType();
         if (phoneType == Phone.PHONE_TYPE_CDMA) {
             if ((mApplication.cdmaPhoneCallState.getCurrentCallState()
                     == CdmaPhoneCallState.PhoneCallState.THRWAY_ACTIVE)
                     && mApplication.cdmaPhoneCallState.IsThreeWayCallOrigStateDialing()) {
-                displayOnHoldCallStatus(phone, fgCall);
+                displayOnHoldCallStatus(cm, fgCall);
             } else {
                 //This is required so that even if a background call is not present
                 // we need to clean up the background call area.
-                displayOnHoldCallStatus(phone, bgCall);
+                displayOnHoldCallStatus(cm, bgCall);
             }
-        } else if (phoneType == Phone.PHONE_TYPE_GSM) {
-            displayOnHoldCallStatus(phone, bgCall);
+        } else if ((phoneType == Phone.PHONE_TYPE_GSM)
+                || (phoneType == Phone.PHONE_TYPE_SIP)) {
+            displayOnHoldCallStatus(cm, bgCall);
         }
     }
 
@@ -296,21 +307,19 @@ public class CallCard extends FrameLayout
      * Updates the UI for the state where an incoming call is ringing (or
      * call waiting), regardless of whether the phone's already offhook.
      */
-    private void updateRingingCall(Phone phone) {
+    private void updateRingingCall(CallManager cm) {
         if (DBG) log("updateRingingCall()...");
 
-        Call ringingCall = phone.getRingingCall();
-        Call fgCall = phone.getForegroundCall();
-        Call bgCall = phone.getBackgroundCall();
+        Call ringingCall = cm.getFirstActiveRingingCall();
 
         // Display caller-id info and photo from the incoming call:
-        displayMainCallStatus(phone, ringingCall);
+        displayMainCallStatus(cm, ringingCall);
 
         // And even in the Call Waiting case, *don't* show any info about
         // the current ongoing call and/or the current call on hold.
         // (Since the caller-id info for the incoming call totally trumps
         // any info about the current call(s) in progress.)
-        displayOnHoldCallStatus(phone, null);
+        displayOnHoldCallStatus(cm, null);
     }
 
     /**
@@ -321,19 +330,19 @@ public class CallCard extends FrameLayout
      *
      * This puts the callcard into a sane but "blank" state.
      */
-    private void updateNoCall(Phone phone) {
+    private void updateNoCall(CallManager cm) {
         if (DBG) log("updateNoCall()...");
 
-        displayMainCallStatus(phone, null);
-        displayOnHoldCallStatus(phone, null);
+        displayMainCallStatus(cm, null);
+        displayOnHoldCallStatus(cm, null);
     }
 
     /**
      * Updates the main block of caller info on the CallCard
      * (ie. the stuff in the primaryCallInfo block) based on the specified Call.
      */
-    private void displayMainCallStatus(Phone phone, Call call) {
-        if (DBG) log("displayMainCallStatus(phone " + phone
+    private void displayMainCallStatus(CallManager cm, Call call) {
+        if (DBG) log("displayMainCallStatus(phone " + cm
                      + ", call " + call + ")...");
 
         if (call == null) {
@@ -403,19 +412,20 @@ public class CallCard extends FrameLayout
                 break;
         }
 
-        updateCardTitleWidgets(phone, call);
+        updateCardTitleWidgets(call.getPhone(), call);
 
         if (PhoneUtils.isConferenceCall(call)) {
             // Update onscreen info for a conference call.
-            updateDisplayForConference();
+            updateDisplayForConference(call);
         } else {
             // Update onscreen info for a regular call (which presumably
             // has only one connection.)
             Connection conn = null;
-            int phoneType = phone.getPhoneType();
+            int phoneType = call.getPhone().getPhoneType();
             if (phoneType == Phone.PHONE_TYPE_CDMA) {
                 conn = call.getLatestConnection();
-            } else if (phoneType == Phone.PHONE_TYPE_GSM) {
+            } else if ((phoneType == Phone.PHONE_TYPE_GSM)
+                  || (phoneType == Phone.PHONE_TYPE_SIP)) {
                 conn = call.getEarliestConnection();
             } else {
                 throw new IllegalStateException("Unexpected phone type: " + phoneType);
@@ -546,10 +556,11 @@ public class CallCard extends FrameLayout
             if (DBG) log("callerinfo query complete, updating ui from displayMainCallStatus()");
             Call call = (Call) cookie;
             Connection conn = null;
-            int phoneType = mApplication.phone.getPhoneType();
+            int phoneType = call.getPhone().getPhoneType();
             if (phoneType == Phone.PHONE_TYPE_CDMA) {
                 conn = call.getLatestConnection();
-            } else if (phoneType == Phone.PHONE_TYPE_GSM) {
+            } else if ((phoneType == Phone.PHONE_TYPE_GSM)
+                  || (phoneType == Phone.PHONE_TYPE_SIP)) {
                 conn = call.getEarliestConnection();
             } else {
                 throw new IllegalStateException("Unexpected phone type: " + phoneType);
@@ -607,14 +618,15 @@ public class CallCard extends FrameLayout
         // need to be set.)
 
         String cardTitle;
-        int phoneType = mApplication.phone.getPhoneType();
+        int phoneType = phone.getPhoneType();
         if (phoneType == Phone.PHONE_TYPE_CDMA) {
             if (!PhoneApp.getInstance().notifier.getIsCdmaRedialCall()) {
                 cardTitle = getTitleForCallCard(call);  // Normal "foreground" call card
             } else {
                 cardTitle = getContext().getString(R.string.card_title_redialing);
             }
-        } else if (phoneType == Phone.PHONE_TYPE_GSM) {
+        } else if ((phoneType == Phone.PHONE_TYPE_GSM)
+                || (phoneType == Phone.PHONE_TYPE_SIP)) {
             cardTitle = getTitleForCallCard(call);
         } else {
             throw new IllegalStateException("Unexpected phone type: " + phoneType);
@@ -641,7 +653,8 @@ public class CallCard extends FrameLayout
                         // Normal "ongoing call" state; don't use any "title" at all.
                         clearUpperTitle();
                     }
-                } else if (phoneType == Phone.PHONE_TYPE_GSM) {
+                } else if ((phoneType == Phone.PHONE_TYPE_GSM)
+                        || (phoneType == Phone.PHONE_TYPE_SIP)) {
                     // While in the DISCONNECTING state we display a
                     // "Hanging up" message in order to make the UI feel more
                     // responsive.  (In GSM it's normal to see a delay of a
@@ -747,14 +760,15 @@ public class CallCard extends FrameLayout
             case ACTIVE:
                 // Title is "Call in progress".  (Note this appears in the
                 // "lower title" area of the CallCard.)
-                int phoneType = mApplication.phone.getPhoneType();
+                int phoneType = call.getPhone().getPhoneType();
                 if (phoneType == Phone.PHONE_TYPE_CDMA) {
                     if (mApplication.cdmaPhoneCallState.IsThreeWayCallOrigStateDialing()) {
                         retVal = context.getString(R.string.card_title_dialing);
                     } else {
                         retVal = context.getString(R.string.card_title_in_progress);
                     }
-                } else if (phoneType == Phone.PHONE_TYPE_GSM) {
+                } else if ((phoneType == Phone.PHONE_TYPE_GSM)
+                        || (phoneType == Phone.PHONE_TYPE_SIP)) {
                     retVal = context.getString(R.string.card_title_in_progress);
                 } else {
                     throw new IllegalStateException("Unexpected phone type: " + phoneType);
@@ -797,7 +811,7 @@ public class CallCard extends FrameLayout
      * Or, clear out the "on hold" box if the specified call
      * is null or idle.
      */
-    private void displayOnHoldCallStatus(Phone phone, Call call) {
+    private void displayOnHoldCallStatus(CallManager cm, Call call) {
         if (DBG) log("displayOnHoldCallStatus(call =" + call + ")...");
 
         if ((call == null) || (PhoneApp.getInstance().isOtaCallInActiveState())) {
@@ -963,6 +977,30 @@ public class CallCard extends FrameLayout
                     resID = R.string.callFailed_congestion;
                     break;
 
+                case TIMED_OUT:
+                    resID = R.string.callFailed_timedOut;
+                    break;
+
+                case SERVER_UNREACHABLE:
+                    resID = R.string.callFailed_server_unreachable;
+                    break;
+
+                case NUMBER_UNREACHABLE:
+                    resID = R.string.callFailed_number_unreachable;
+                    break;
+
+                case INVALID_CREDENTIALS:
+                    resID = R.string.callFailed_invalid_credentials;
+                    break;
+
+                case SERVER_ERROR:
+                    resID = R.string.callFailed_server_error;
+                    break;
+
+                case OUT_OF_NETWORK:
+                    resID = R.string.callFailed_out_of_network;
+                    break;
+
                 case LOST_SIGNAL:
                 case CDMA_DROP:
                     resID = R.string.callFailed_noSignal;
@@ -982,6 +1020,11 @@ public class CallCard extends FrameLayout
 
                 case OUT_OF_SERVICE:
                     resID = R.string.callFailed_outOfService;
+                    break;
+
+                case INVALID_NUMBER:
+                case UNOBTAINABLE_NUMBER:
+                    resID = R.string.callFailed_unobtainable_number;
                     break;
 
                 default:
@@ -1010,7 +1053,8 @@ public class CallCard extends FrameLayout
         mPhotoTracker.setPhotoRequest(info);
         mPhotoTracker.setPhotoState(ContactsAsyncHelper.ImageTracker.DISPLAY_IMAGE);
 
-        String name;
+        // The actual strings we're going to display onscreen:
+        String displayName;
         String displayNumber = null;
         String label = null;
         Uri personUri = null;
@@ -1031,42 +1075,62 @@ public class CallCard extends FrameLayout
             // .getCallerInfo() that relied on a NULL CallerInfo to indicate
             // an unknown contact.
 
+            // Currently, info.phoneNumber may actually be a SIP address, and
+            // if so, it might sometimes include the "sip:" prefix.  That
+            // prefix isn't really useful to the user, though, so strip it off
+            // if present.  (For any other URI scheme, though, leave the
+            // prefix alone.)
+            // TODO: It would be cleaner for CallerInfo to explicitly support
+            // SIP addresses instead of overloading the "phoneNumber" field.
+            // Then we could remove this hack, and instead ask the CallerInfo
+            // for a "user visible" form of the SIP address.
+            String number = info.phoneNumber;
+            if ((number != null) && number.startsWith("sip:")) {
+                number = number.substring(4);
+            }
+
             if (TextUtils.isEmpty(info.name)) {
-                if (TextUtils.isEmpty(info.phoneNumber)) {
-                    name =  getPresentationString(presentation);
+                // No valid "name" in the CallerInfo, so fall back to
+                // something else.
+                // (Typically, we promote the phone number up to the "name"
+                // slot onscreen, and leave the "number" slot empty.)
+                if (TextUtils.isEmpty(number)) {
+                    displayName =  getPresentationString(presentation);
                 } else if (presentation != Connection.PRESENTATION_ALLOWED) {
                     // This case should never happen since the network should never send a phone #
                     // AND a restricted presentation. However we leave it here in case of weird
                     // network behavior
-                    name = getPresentationString(presentation);
+                    displayName = getPresentationString(presentation);
                 } else if (!TextUtils.isEmpty(info.cnapName)) {
-                    name = info.cnapName;
+                    displayName = info.cnapName;
                     info.name = info.cnapName;
-                    displayNumber = info.phoneNumber;
+                    displayNumber = number;
                 } else {
-                    name = info.phoneNumber;
+                    displayName = number;
                 }
             } else {
+                // We do have a valid "name" in the CallerInfo.  Display that
+                // in the "name" slot, and the phone number in the "number" slot.
                 if (presentation != Connection.PRESENTATION_ALLOWED) {
                     // This case should never happen since the network should never send a name
                     // AND a restricted presentation. However we leave it here in case of weird
                     // network behavior
-                    name = getPresentationString(presentation);
+                    displayName = getPresentationString(presentation);
                 } else {
-                    name = info.name;
-                    displayNumber = info.phoneNumber;
+                    displayName = info.name;
+                    displayNumber = number;
                     label = info.phoneLabel;
                 }
             }
             personUri = ContentUris.withAppendedId(Contacts.CONTENT_URI, info.person_id);
         } else {
-            name =  getPresentationString(presentation);
+            displayName =  getPresentationString(presentation);
         }
 
         if (call.isGeneric()) {
             mName.setText(R.string.card_title_in_call);
         } else {
-            mName.setText(name);
+            mName.setText(displayName);
         }
         mName.setVisibility(View.VISIBLE);
 
@@ -1109,18 +1173,9 @@ public class CallCard extends FrameLayout
             mLabel.setVisibility(View.GONE);
         }
 
-        // "Social status": currently unused.
-        // Note socialStatus is *only* visible while an incoming
-        // call is ringing, never in any other call state.
-        if ((socialStatusText != null) && call.isRinging() && !call.isGeneric()) {
-            mSocialStatus.setVisibility(View.VISIBLE);
-            mSocialStatus.setText(socialStatusText);
-            mSocialStatus.setCompoundDrawablesWithIntrinsicBounds(
-                    socialStatusBadge, null, null, null);
-            mSocialStatus.setCompoundDrawablePadding((int) (mDensity * 6));
-        } else {
-            mSocialStatus.setVisibility(View.GONE);
-        }
+        // Other text fields:
+        updateCallTypeLabel(call);
+        updateSocialStatus(socialStatusText, socialStatusBadge, call);  // Currently unused
     }
 
     private String getPresentationString(int presentation) {
@@ -1140,10 +1195,10 @@ public class CallCard extends FrameLayout
      * If the current call has only a single connection, use
      * updateDisplayForPerson() instead.
      */
-    private void updateDisplayForConference() {
+    private void updateDisplayForConference(Call call) {
         if (DBG) log("updateDisplayForConference()...");
 
-        int phoneType = mApplication.phone.getPhoneType();
+        int phoneType = call.getPhone().getPhoneType();
         if (phoneType == Phone.PHONE_TYPE_CDMA) {
             // This state corresponds to both 3-Way merged call and
             // Call Waiting accepted call.
@@ -1153,7 +1208,8 @@ public class CallCard extends FrameLayout
             // which caller party he is talking to.
             showImage(mPhoto, R.drawable.picture_dialing);
             mName.setText(R.string.card_title_in_call);
-        } else if (phoneType == Phone.PHONE_TYPE_GSM) {
+        } else if ((phoneType == Phone.PHONE_TYPE_GSM)
+                || (phoneType == Phone.PHONE_TYPE_SIP)) {
             if (mInCallScreen.isTouchUiEnabled()) {
                 // Display the "manage conference" button in place of the photo.
                 mManageConferencePhotoButton.setVisibility(View.VISIBLE);
@@ -1178,8 +1234,9 @@ public class CallCard extends FrameLayout
         mPhoneNumber.setVisibility(View.GONE);
         mLabel.setVisibility(View.GONE);
 
-        // socialStatus is never visible in this state.
-        mSocialStatus.setVisibility(View.GONE);
+        // Other text fields:
+        updateCallTypeLabel(call);
+        updateSocialStatus(null, null, null);  // socialStatus is never visible in this state
 
         // TODO: for a GSM conference call, since we do actually know who
         // you're talking to, consider also showing names / numbers /
@@ -1252,10 +1309,11 @@ public class CallCard extends FrameLayout
                 CallerInfo ci = null;
                 {
                     Connection conn = null;
-                    int phoneType = mApplication.phone.getPhoneType();
+                    int phoneType = call.getPhone().getPhoneType();
                     if (phoneType == Phone.PHONE_TYPE_CDMA) {
                         conn = call.getLatestConnection();
-                    } else if (phoneType == Phone.PHONE_TYPE_GSM) {
+                    } else if ((phoneType == Phone.PHONE_TYPE_GSM)
+                            || (phoneType == Phone.PHONE_TYPE_SIP)) {
                         conn = call.getEarliestConnection();
                     } else {
                         throw new IllegalStateException("Unexpected phone type: " + phoneType);
@@ -1393,6 +1451,54 @@ public class CallCard extends FrameLayout
      */
     private void clearUpperTitle() {
         setUpperTitle("", 0, Call.State.IDLE);  // Use dummy values for "color" and "state"
+    }
+
+    /**
+     * Updates the "Call type" label, based on the current foreground call.
+     * This is a special label and/or branding we display for certain
+     * kinds of calls.
+     *
+     * (So far, this is used only for SIP calls, which get an
+     * "Internet call" label.  TODO: But eventually, the telephony
+     * layer might allow each pluggable "provider" to specify a string
+     * and/or icon to be displayed here.)
+     */
+    private void updateCallTypeLabel(Call call) {
+        int phoneType = (call != null) ? call.getPhone().getPhoneType() : Phone.PHONE_TYPE_NONE;
+        if (phoneType == Phone.PHONE_TYPE_SIP) {
+            mCallTypeLabel.setVisibility(View.VISIBLE);
+            mCallTypeLabel.setText(R.string.incall_call_type_label_sip);
+            mCallTypeLabel.setTextColor(mTextColorCallTypeSip);
+            // If desired, we could also display a "badge" next to the label, as follows:
+            //   mCallTypeLabel.setCompoundDrawablesWithIntrinsicBounds(
+            //           callTypeSpecificBadge, null, null, null);
+            //   mCallTypeLabel.setCompoundDrawablePadding((int) (mDensity * 6));
+        } else {
+            mCallTypeLabel.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * Updates the "social status" label with the specified text and
+     * (optional) badge.
+     */
+    private void updateSocialStatus(String socialStatusText,
+                                    Drawable socialStatusBadge,
+                                    Call call) {
+        // The socialStatus field is *only* visible while an incoming call
+        // is ringing, never in any other call state.
+        if ((socialStatusText != null)
+                && (call != null)
+                && call.isRinging()
+                && !call.isGeneric()) {
+            mSocialStatus.setVisibility(View.VISIBLE);
+            mSocialStatus.setText(socialStatusText);
+            mSocialStatus.setCompoundDrawablesWithIntrinsicBounds(
+                    socialStatusBadge, null, null, null);
+            mSocialStatus.setCompoundDrawablePadding((int) (mDensity * 6));
+        } else {
+            mSocialStatus.setVisibility(View.GONE);
+        }
     }
 
     /**

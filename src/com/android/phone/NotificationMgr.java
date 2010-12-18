@@ -29,13 +29,12 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.media.AudioManager;
 import android.net.Uri;
-import android.os.IBinder;
 import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.preference.PreferenceManager;
-import android.provider.Settings;
 import android.provider.CallLog.Calls;
 import android.provider.ContactsContract.PhoneLookup;
+import android.provider.Settings;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.ServiceState;
 import android.text.TextUtils;
@@ -49,6 +48,7 @@ import com.android.internal.telephony.CallerInfoAsyncQuery;
 import com.android.internal.telephony.Connection;
 import com.android.internal.telephony.Phone;
 import com.android.internal.telephony.PhoneBase;
+import com.android.internal.telephony.CallManager;
 
 
 /**
@@ -56,7 +56,8 @@ import com.android.internal.telephony.PhoneBase;
  */
 public class NotificationMgr implements CallerInfoAsyncQuery.OnQueryCompleteListener{
     private static final String LOG_TAG = "NotificationMgr";
-    private static final boolean DBG = (PhoneApp.DBG_LEVEL >= 2);
+    private static final boolean DBG =
+            (PhoneApp.DBG_LEVEL >= 1) && (SystemProperties.getInt("ro.debuggable", 0) == 1);
 
     private static final String[] CALL_LOG_PROJECTION = new String[] {
         Calls._ID,
@@ -78,14 +79,15 @@ public class NotificationMgr implements CallerInfoAsyncQuery.OnQueryCompleteList
 
     private static NotificationMgr sMe = null;
     private Phone mPhone;
+    private CallManager mCM;
 
     private Context mContext;
     private NotificationManager mNotificationMgr;
     private StatusBarManager mStatusBar;
     private StatusBarMgr mStatusBarMgr;
     private Toast mToast;
-    private IBinder mSpeakerphoneIcon;
-    private IBinder mMuteIcon;
+    private boolean mShowingSpeakerphoneIcon;
+    private boolean mShowingMuteIcon;
 
     // used to track the missed call counter, default to 0.
     private int mNumberMissedCalls = 0;
@@ -116,6 +118,7 @@ public class NotificationMgr implements CallerInfoAsyncQuery.OnQueryCompleteList
 
         PhoneApp app = PhoneApp.getInstance();
         mPhone = app.phone;
+        mCM = app.mCM;
     }
 
     static void init(Context context) {
@@ -222,17 +225,13 @@ public class NotificationMgr implements CallerInfoAsyncQuery.OnQueryCompleteList
         where.append(" AND new=1");
 
         // start the query
+        if (DBG) log("- start call log query...");
         mQueryHandler.startQuery(CALL_LOG_TOKEN, null, Calls.CONTENT_URI,  CALL_LOG_PROJECTION,
                 where.toString(), null, Calls.DEFAULT_SORT_ORDER);
 
-        // synchronize the in call notification
-        if (mPhone.getState() != Phone.State.OFFHOOK) {
-            if (DBG) log("Phone is idle, canceling notification.");
-            cancelInCall();
-        } else {
-            if (DBG) log("Phone is offhook, updating notification.");
-            updateInCallNotification();
-        }
+        // Update (or cancel) the in-call notification
+        if (DBG) log("- updating in-call notification at startup...");
+        updateInCallNotification();
 
         // Depend on android.app.StatusBarManager to be set to
         // disable(DISABLE_NONE) upon startup.  This will be the
@@ -433,16 +432,16 @@ public class NotificationMgr implements CallerInfoAsyncQuery.OnQueryCompleteList
     }
 
     void notifySpeakerphone() {
-        if (mSpeakerphoneIcon == null) {
-            mSpeakerphoneIcon = mStatusBar.addIcon("speakerphone",
-                    android.R.drawable.stat_sys_speakerphone, 0);
+        if (!mShowingSpeakerphoneIcon) {
+            mStatusBar.setIcon("speakerphone", android.R.drawable.stat_sys_speakerphone, 0);
+            mShowingSpeakerphoneIcon = true;
         }
     }
 
     void cancelSpeakerphone() {
-        if (mSpeakerphoneIcon != null) {
-            mStatusBar.removeIcon(mSpeakerphoneIcon);
-            mSpeakerphoneIcon = null;
+        if (mShowingSpeakerphoneIcon) {
+            mStatusBar.removeIcon("speakerphone");
+            mShowingSpeakerphoneIcon = false;
         }
     }
 
@@ -462,16 +461,17 @@ public class NotificationMgr implements CallerInfoAsyncQuery.OnQueryCompleteList
         }
     }
 
-    void notifyMute() {
-        if (mMuteIcon == null) {
-            mMuteIcon = mStatusBar.addIcon("mute", android.R.drawable.stat_notify_call_mute, 0);
+    private void notifyMute() {
+        if (!mShowingMuteIcon) {
+            mStatusBar.setIcon("mute", android.R.drawable.stat_notify_call_mute, 0);
+            mShowingMuteIcon = true;
         }
     }
 
-    void cancelMute() {
-        if (mMuteIcon != null) {
-            mStatusBar.removeIcon(mMuteIcon);
-            mMuteIcon = null;
+    private void cancelMute() {
+        if (mShowingMuteIcon) {
+            mStatusBar.removeIcon("mute");
+            mShowingMuteIcon = false;
         }
     }
 
@@ -480,7 +480,7 @@ public class NotificationMgr implements CallerInfoAsyncQuery.OnQueryCompleteList
      * the actual current mute state of the Phone.
      */
     void updateMuteNotification() {
-        if ((mPhone.getState() == Phone.State.OFFHOOK) && mPhone.getMute()) {
+        if ((mCM.getState() == Phone.State.OFFHOOK) && PhoneUtils.getMute()) {
             if (DBG) log("updateMuteNotification: MUTED");
             notifyMute();
         } else {
@@ -489,43 +489,52 @@ public class NotificationMgr implements CallerInfoAsyncQuery.OnQueryCompleteList
         }
     }
 
+    /**
+     * Updates the phone app's status bar notification based on the
+     * current telephony state, or cancels the notification if the phone
+     * is totally idle.
+     */
     void updateInCallNotification() {
         int resId;
         if (DBG) log("updateInCallNotification()...");
 
-        if (mPhone.getState() != Phone.State.OFFHOOK) {
+        if (mCM.getState() == Phone.State.IDLE) {
+            cancelInCall();
             return;
         }
 
-        final boolean hasActiveCall = !mPhone.getForegroundCall().isIdle();
-        final boolean hasHoldingCall = !mPhone.getBackgroundCall().isIdle();
+        final boolean hasRingingCall = mCM.hasActiveRingingCall();
+        final boolean hasActiveCall = mCM.hasActiveFgCall();
+        final boolean hasHoldingCall = mCM.hasActiveBgCall();
 
-        // Display the appropriate "in-call" icon in the status bar,
-        // which depends on the current phone and/or bluetooth state.
-
+        // Display the appropriate icon in the status bar,
+        // based on the current phone and/or bluetooth state.
 
         boolean enhancedVoicePrivacy = PhoneApp.getInstance().notifier.getCdmaVoicePrivacyState();
         if (DBG) log("updateInCallNotification: enhancedVoicePrivacy = " + enhancedVoicePrivacy);
 
-        if (!hasActiveCall && hasHoldingCall) {
+        if (hasRingingCall) {
+            // There's an incoming ringing call.
+            resId = R.drawable.stat_sys_phone_call_ringing;
+        } else if (!hasActiveCall && hasHoldingCall) {
             // There's only one call, and it's on hold.
             if (enhancedVoicePrivacy) {
-                resId = android.R.drawable.stat_sys_vp_phone_call_on_hold;
+                resId = R.drawable.stat_sys_vp_phone_call_on_hold;
             } else {
-                resId = android.R.drawable.stat_sys_phone_call_on_hold;
+                resId = R.drawable.stat_sys_phone_call_on_hold;
             }
         } else if (PhoneApp.getInstance().showBluetoothIndication()) {
             // Bluetooth is active.
             if (enhancedVoicePrivacy) {
-                resId = com.android.internal.R.drawable.stat_sys_vp_phone_call_bluetooth;
+                resId = R.drawable.stat_sys_vp_phone_call_bluetooth;
             } else {
-                resId = com.android.internal.R.drawable.stat_sys_phone_call_bluetooth;
+                resId = R.drawable.stat_sys_phone_call_bluetooth;
             }
         } else {
             if (enhancedVoicePrivacy) {
-                resId = android.R.drawable.stat_sys_vp_phone_call;
+                resId = R.drawable.stat_sys_vp_phone_call;
             } else {
-                resId = android.R.drawable.stat_sys_phone_call;
+                resId = R.drawable.stat_sys_phone_call;
             }
         }
 
@@ -535,34 +544,47 @@ public class NotificationMgr implements CallerInfoAsyncQuery.OnQueryCompleteList
         // we were here (like the caller-id info of the foreground call,
         // if the user swapped calls...)
 
-        if (DBG) log("- Updating status bar icon: " + resId);
+        if (DBG) log("- Updating status bar icon: resId = " + resId);
         mInCallResId = resId;
-
-        // Even if both lines are in use, we only show a single item in
-        // the expanded Notifications UI.  It's labeled "Ongoing call"
-        // (or "On hold" if there's only one call, and it's on hold.)
 
         // The icon in the expanded view is the same as in the status bar.
         int expandedViewIcon = mInCallResId;
 
+        // Even if both lines are in use, we only show a single item in
+        // the expanded Notifications UI.  It's labeled "Ongoing call"
+        // (or "On hold" if there's only one call, and it's on hold.)
         // Also, we don't have room to display caller-id info from two
-        // different calls.  So if there's only one call, use that, but if
-        // both lines are in use we display the caller-id info from the
-        // foreground call and totally ignore the background call.
-        Call currentCall = hasActiveCall ? mPhone.getForegroundCall()
-                : mPhone.getBackgroundCall();
+        // different calls.  So if both lines are in use, display info
+        // from the foreground call.  And if there's a ringing call,
+        // display that regardless of the state of the other calls.
+
+        Call currentCall;
+        if (hasRingingCall) {
+            currentCall = mCM.getFirstActiveRingingCall();
+        } else if (hasActiveCall) {
+            currentCall = mCM.getActiveFgCall();
+        } else {
+            currentCall = mCM.getFirstActiveBgCall();
+        }
         Connection currentConn = currentCall.getEarliestConnection();
+
+        Notification notification = new Notification();
+        notification.icon = mInCallResId;
+        notification.flags |= Notification.FLAG_ONGOING_EVENT;
+
+        // PendingIntent that can be used to launch the InCallScreen.  The
+        // system fires off this intent if the user pulls down the windowshade
+        // and clicks the notification's expanded view.  It's also used to
+        // launch the InCallScreen immediately when when there's an incoming
+        // call (see the "fullScreenIntent" field below).
+        PendingIntent inCallPendingIntent =
+                PendingIntent.getActivity(mContext, 0,
+                                          PhoneApp.createInCallIntent(), 0);
+        notification.contentIntent = inCallPendingIntent;
 
         // When expanded, the "Ongoing call" notification is (visually)
         // different from most other Notifications, so we need to use a
         // custom view hierarchy.
-
-        Notification notification = new Notification();
-        notification.icon = mInCallResId;
-        notification.contentIntent = PendingIntent.getActivity(mContext, 0,
-                PhoneApp.createInCallIntent(), 0);
-        notification.flags |= Notification.FLAG_ONGOING_EVENT;
-
         // Our custom view, which includes an icon (either "ongoing call" or
         // "on hold") and 2 lines of text: (1) the label (either "ongoing
         // call" with time counter, or "on hold), and (2) the compact name of
@@ -589,19 +611,24 @@ public class NotificationMgr implements CallerInfoAsyncQuery.OnQueryCompleteList
 
             // Line 1 of the expanded view (in bold text):
             String expandedViewLine1;
-            if (hasHoldingCall && !hasActiveCall) {
-                // Only one call, and it's on hold!
-                // Note this isn't a format string!  (We want "On hold" here,
-                // not "On hold (1:23)".)  That's OK; if you call
-                // String.format() with more arguments than format specifiers,
-                // the extra arguments are ignored.
+            if (hasRingingCall) {
+                // Incoming call is ringing.
+                // Note this isn't a format string!  (We want "Incoming call"
+                // here, not "Incoming call (1:23)".)  But that's OK; if you
+                // call String.format() with more arguments than format
+                // specifiers, the extra arguments are ignored.
+                expandedViewLine1 = mContext.getString(R.string.notification_incoming_call);
+            } else if (hasHoldingCall && !hasActiveCall) {
+                // Only one call, and it's on hold.
+                // Note this isn't a format string either (see comment above.)
                 expandedViewLine1 = mContext.getString(R.string.notification_on_hold);
             } else {
+                // Normal ongoing call.
                 // Format string with a "%s" where the current call time should go.
                 expandedViewLine1 = mContext.getString(R.string.notification_ongoing_call_format);
             }
 
-            if (DBG) log("- Updating expanded view: line 1 '" + expandedViewLine1 + "'");
+            if (DBG) log("- Updating expanded view: line 1 '" + /*expandedViewLine1*/ "xxxxxxx" + "'");
 
             // Text line #1 is actually a Chronometer, not a plain TextView.
             // We format the elapsed time of the current call into a line like
@@ -611,29 +638,35 @@ public class NotificationMgr implements CallerInfoAsyncQuery.OnQueryCompleteList
                                        expandedViewLine1,
                                        true);
         } else if (DBG) {
-            log("updateInCallNotification: connection is null, call status not updated.");
+            Log.w(LOG_TAG, "updateInCallNotification: null connection, can't set exp view line 1.");
         }
 
         // display conference call string if this call is a conference
         // call, otherwise display the connection information.
 
+        // Line 2 of the expanded view (smaller text).  This is usually a
+        // contact name or phone number.
+        String expandedViewLine2 = "";
         // TODO: it may not make sense for every point to make separate
         // checks for isConferenceCall, so we need to think about
         // possibly including this in startGetCallerInfo or some other
         // common point.
-        String expandedViewLine2 = "";
         if (PhoneUtils.isConferenceCall(currentCall)) {
             // if this is a conference call, just use that as the caller name.
             expandedViewLine2 = mContext.getString(R.string.card_title_conf_call);
         } else {
-            // Start asynchronous call to get the compact name.
+            // If necessary, start asynchronous query to do the caller-id lookup.
             PhoneUtils.CallerInfoToken cit =
-                PhoneUtils.startGetCallerInfo (mContext, currentCall, this, contentView);
-            // Line 2 of the expanded view (smaller text):
+                PhoneUtils.startGetCallerInfo(mContext, currentCall, this, this);
             expandedViewLine2 = PhoneUtils.getCompactNameFromCallerInfo(cit.currentInfo, mContext);
+            // Note: For an incoming call, the very first time we get here we
+            // won't have a contact name yet, since we only just started the
+            // caller-id query.  So expandedViewLine2 will start off as a raw
+            // phone number, but we'll update it very quickly when the query
+            // completes (see onQueryComplete() below.)
         }
 
-        if (DBG) log("- Updating expanded view: line 2 '" + expandedViewLine2 + "'");
+        if (DBG) log("- Updating expanded view: line 2 '" + /*expandedViewLine2*/ "xxxxxxx" + "'");
         contentView.setTextViewText(R.id.text2, expandedViewLine2);
         notification.contentView = contentView;
 
@@ -642,6 +675,16 @@ public class NotificationMgr implements CallerInfoAsyncQuery.OnQueryCompleteList
         // (ie. make sure the caller info here corresponds to the active
         // line), and maybe even when the user swaps calls (ie. if we only
         // show info here for the "current active call".)
+
+        // Activate a couple of special Notification features if an
+        // incoming call is ringing:
+        if (hasRingingCall) {
+            // We actually want to launch the incoming call UI at this point
+            // (rather than just posting a notification to the status bar).
+            // Setting fullScreenIntent will cause the InCallScreen to be
+            // launched immediately.
+            notification.fullScreenIntent = inCallPendingIntent;
+        }
 
         if (DBG) log("Notifying IN_CALL_NOTIFICATION: " + notification);
         mNotificationMgr.notify(IN_CALL_NOTIFICATION,
@@ -659,10 +702,28 @@ public class NotificationMgr implements CallerInfoAsyncQuery.OnQueryCompleteList
      * refreshes the contentView when called.
      */
     public void onQueryComplete(int token, Object cookie, CallerInfo ci){
-        if (DBG) log("callerinfo query complete, updating ui.");
+        if (DBG) log("CallerInfo query complete (for NotificationMgr), "
+                     + "updating in-call notification..");
+        if (DBG) log("- cookie: " + cookie);
+        if (DBG) log("- ci: " + ci);
 
-        ((RemoteViews) cookie).setTextViewText(R.id.text2,
-                PhoneUtils.getCompactNameFromCallerInfo(ci, mContext));
+        if (cookie == this) {
+            // Ok, this is the caller-id query we fired off in
+            // updateInCallNotification(), presumably when an incoming call
+            // first appeared.  If the caller-id info matched any contacts,
+            // compactName should now be a real person name rather than a raw
+            // phone number:
+            if (DBG) log("- compactName is now: "
+                         + PhoneUtils.getCompactNameFromCallerInfo(ci, mContext));
+
+            // Now that our CallerInfo object has been fully filled-in,
+            // refresh the in-call notification.
+            if (DBG) log("- updating notification after query complete...");
+            updateInCallNotification();
+        } else {
+            Log.w(LOG_TAG, "onQueryComplete: caller-id query from unknown source! "
+                  + "cookie = " + cookie);
+        }
     }
 
     private void cancelInCall() {
@@ -749,7 +810,7 @@ public class NotificationMgr implements CallerInfoAsyncQuery.OnQueryCompleteList
                 }
             }
 
-            if (mPhone.getPhoneType() == Phone.PHONE_TYPE_CDMA) {
+            if (TelephonyCapabilities.supportsVoiceMessageCount(mPhone)) {
                 int vmCount = mPhone.getVoiceMessageCount();
                 String titleFormat = mContext.getString(R.string.notification_voicemail_title_count);
                 notificationTitle = String.format(titleFormat, vmCount);
@@ -820,7 +881,7 @@ public class NotificationMgr implements CallerInfoAsyncQuery.OnQueryCompleteList
 
                 notification = new Notification(
                         mContext,  // context
-                        android.R.drawable.stat_sys_phone_call_forward,  // icon
+                        R.drawable.stat_sys_phone_call_forward,  // icon
                         null, // tickerText
                         0,  // The "timestamp" of this notification is meaningless;
                             // we only care about whether CFI is currently on or not.
@@ -831,7 +892,7 @@ public class NotificationMgr implements CallerInfoAsyncQuery.OnQueryCompleteList
 
             } else {
                 notification = new Notification(
-                        android.R.drawable.stat_sys_phone_call_forward,  // icon
+                        R.drawable.stat_sys_phone_call_forward,  // icon
                         null,  // tickerText
                         System.currentTimeMillis()  // when
                         );
@@ -893,7 +954,7 @@ public class NotificationMgr implements CallerInfoAsyncQuery.OnQueryCompleteList
                 R.string.notification_network_selection_text, operator);
 
         Notification notification = new Notification();
-        notification.icon = com.android.internal.R.drawable.stat_sys_warning;
+        notification.icon = android.R.drawable.stat_sys_warning;
         notification.when = 0;
         notification.flags = Notification.FLAG_ONGOING_EVENT;
         notification.tickerText = null;
@@ -926,7 +987,7 @@ public class NotificationMgr implements CallerInfoAsyncQuery.OnQueryCompleteList
      * @param serviceState Phone service state
      */
     void updateNetworkSelection(int serviceState) {
-        if (mPhone.getPhoneType() == Phone.PHONE_TYPE_GSM) {
+        if (TelephonyCapabilities.supportsNetworkSelection(mPhone)) {
             // get the shared preference of network_selection.
             // empty is auto mode, otherwise it is the operator alpha name
             // in case there is no operator name, check the operator numeric

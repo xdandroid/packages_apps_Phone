@@ -30,6 +30,12 @@
     <string name="ongoing" msgid="8300874342848721367">"Τρέχουσα κλήση"</string>
     <string name="callFailed_userBusy" msgid="8851106999809294904">"Η γραμμή είναι απασχολημένη"</string>
     <string name="callFailed_congestion" msgid="8737761615702718375">"Το δίκτυο είναι απασχολημένο"</string>
+    <string name="callFailed_timedOut" msgid="7590961703135543346">"Καμία απάντηση, το χρονικό όριο έληξε"</string>
+    <string name="callFailed_server_unreachable" msgid="2133506577423869729">"Αδυναμία πρόσβασης σε διακομιστή"</string>
+    <string name="callFailed_number_unreachable" msgid="7632566442515734778">"Δεν είναι δυνατή η κλήση του αριθμού"</string>
+    <string name="callFailed_invalid_credentials" msgid="8226835346196775378">"Εσφαλμένο όνομα χρήστη ή κωδικός πρόσβασης"</string>
+    <string name="callFailed_out_of_network" msgid="6485167392133436262">"Κλήση εκτός δικτύου"</string>
+    <string name="callFailed_server_error" msgid="5717915213586193217">"Σφάλμα διακομιστή: Δοκιμάστε ξανά αργότερα."</string>
     <string name="callFailed_noSignal" msgid="1889803273616031933">"Δεν υπάρχει σήμα"</string>
     <string name="callFailed_limitExceeded" msgid="4958065157970101491">"Υπέρβαση ορίου ACM"</string>
     <string name="callFailed_powerOff" msgid="2766035859391549713">"Ο πομπός είναι απενεργοποιημένος"</string>
@@ -49,6 +55,7 @@
     <string name="callFailed_cdma_accessFailure" msgid="2844306027616452215">"CDMA: Αποτυχία πρόσβασης."</string>
     <string name="callFailed_cdma_preempted" msgid="1097095321180029879">"CDMA: Προκαθορίστηκε."</string>
     <string name="callFailed_cdma_notEmergency" msgid="2347377816822720761">"Μόνο κλήσεις έκτακτης ανάγκης."</string>
+    <string name="callFailed_unobtainable_number" msgid="7886274717456712105">"Μη έγκυρος αριθμός"</string>
     <string name="confCall" msgid="1904840547188336828">"Κλήση συνδιάσκεψης"</string>
     <string name="call_lost" msgid="317670617901479594">"Αναπάντητη κλήση."</string>
     <string name="retry" msgid="8462986804300767852">"Νέα προσπάθεια"</string>
@@ -152,6 +159,7 @@
     <string name="reverting_settings" msgid="4752151682666912828">"Επαναφορά ρυθμίσεων…"</string>
     <string name="response_error" msgid="6674110501330139405">"Μη αναμενόμενη απάντηση από το δίκτυο."</string>
     <string name="exception_error" msgid="7027667130619518211">"Σφάλμα δικτύου ή κάρτας SIM."</string>
+    <string name="fdn_only_error" msgid="7079583506377602000">"Οι λειτουργίες επιτρέπονται μόνο για καθορισμένους αριθμούς κλήσης."</string>
     <string name="radio_off_error" msgid="6717116288405111269">"Πριν προβάλετε αυτές τις ρυθμίσεις, ενεργοποιήστε τον πομπό."</string>
     <string name="close_dialog" msgid="2365884406356986917">"OK"</string>
     <string name="enable" msgid="1059008390636773574">"Ενεργοποίηση"</string>
@@ -367,16 +375,16 @@
     <item msgid="5741268642513143762">"1"</item>
     <item msgid="419525200910932450">"2"</item>
   </string-array>
-    <string name="subscription_title" msgid="5813493350326486">"ΔΟΚΙΜΗ συνδρομής CDMA"</string>
-    <string name="subscription_summary" msgid="8435941016743418124">"Αλλαγή μεταξύ RUIM/SIM και NV"</string>
-    <string name="subscription_dialogtitle" msgid="531571450448009255">"συνδρομή"</string>
-  <string-array name="subscription_choices">
-    <item msgid="6540107472553796600">"RUIM/SIM"</item>
-    <item msgid="1433427108940308332">"NV"</item>
+    <string name="cdma_subscription_title" msgid="445607520753045412">"Συνδρομή CDMA"</string>
+    <string name="cdma_subscription_summary" msgid="2530890766115781140">"Αλλαγή μεταξύ RUIM/SIM και NV"</string>
+    <string name="cdma_subscription_dialogtitle" msgid="2699527950523333110">"συνδρομή"</string>
+  <string-array name="cdma_subscription_choices">
+    <item msgid="2258014151300708431">"RUIM/SIM"</item>
+    <item msgid="5127722015571873880">"NV"</item>
   </string-array>
-  <string-array name="subscription_values">
-    <item msgid="4377788417250295786">"0"</item>
-    <item msgid="1193066664940329729">"1"</item>
+  <string-array name="cdma_subscription_values">
+    <item msgid="7494167883478914080">"0"</item>
+    <item msgid="6043847456049107742">"1"</item>
   </string-array>
     <string name="fdn" msgid="7878832555095183202">"Αριθμοί κλήσης καθορισμένων αριθμών"</string>
     <string name="manage_fdn_list" msgid="8777755791892122369">"Λίστα FDN"</string>
@@ -475,6 +483,7 @@
     <string name="notification_missedCallTicker" msgid="504686252427747209">"Αναπάντητη κλήση από <xliff:g id="MISSED_CALL_FROM">%s</xliff:g>"</string>
     <string name="notification_ongoing_call_format" msgid="227216462548540316">"Τρέχουσα κλήση (<xliff:g id="DURATION">%s</xliff:g>)"</string>
     <string name="notification_on_hold" msgid="3480694969511790465">"Σε αναμονή"</string>
+    <string name="notification_incoming_call" msgid="2820429205043529642">"Εισερχόμενη κλήση"</string>
     <string name="notification_voicemail_title" msgid="8933468752045550523">"Νέο μήνυμα στον αυτόματο τηλεφωνητή"</string>
     <string name="notification_voicemail_title_count" msgid="4366360747660929916">"Νέο μήνυμα στον αυτόματο τηλεφωνητή (<xliff:g id="COUNT">%d</xliff:g>)"</string>
     <string name="notification_voicemail_text_format" msgid="4447323569453981685">"Καλέστε <xliff:g id="VOICEMAIL_NUMBER">%s</xliff:g>"</string>
@@ -495,6 +504,7 @@
     <string name="incall_error_supp_service_conference" msgid="2505727299596357312">"Αδύνατη η πραγματοποίηση κλήσεων συνδιάσκεψης."</string>
     <string name="incall_error_supp_service_reject" msgid="7055164130563826216">"Δεν ήταν δυνατή η απόρριψη της κλήσης."</string>
     <string name="incall_error_supp_service_hangup" msgid="7417583238334762737">"Αδύνατη η επαναφορά κλήσης (κλήσεων)."</string>
+    <string name="incall_call_type_label_sip" msgid="2310958283037924371">"Κλήση Διαδικτύου"</string>
     <string name="emergency_enable_radio_dialog_title" msgid="4627849966634578257">"Κλήσεις επείγουσας ανάγκης"</string>
     <string name="emergency_enable_radio_dialog_message" msgid="207613549344420291">"Ενεργοποίηση πομπού..."</string>
     <string name="emergency_enable_radio_dialog_retry" msgid="3724423402363063736">"Εκτός περιοχής κάλυψης, επανάληψη κλήσης..."</string>
@@ -597,4 +607,86 @@
     <string name="slide_to_answer_and_end_onhold" msgid="638748048960663506">"Μεταφορά δεξιά για απάντηση και"\n"τερματισμό κλήσης σε αναμονή"</string>
     <string name="slide_to_answer_hint" msgid="4901042355463593903">"Απάντηση"</string>
     <string name="slide_to_decline_hint" msgid="4484576372463030324">"Απόρριψη"</string>
+    <string name="contactPhoto" msgid="4713193418046639466">"φωτογραφία επαφής"</string>
+    <string name="goPrivate" msgid="865837794424530980">"ιδιωτική χρήση"</string>
+    <string name="selectContact" msgid="781975788478987237">"επιλογή επαφής"</string>
+    <string name="sip_settings" msgid="6699045718560859691">"Ρυθμίσεις κλήσεων Διαδικτύου"</string>
+    <string name="sip_accounts" msgid="2097054001288457163">"Λογαριασμοί κλήσεων μέσω Διαδικτύου (SIP)"</string>
+    <string name="sip_accounts_title" msgid="1212889069281054570">"Λογαριασμοί"</string>
+    <string name="sip_accounts_summary" msgid="6812629993146552527">"Διαχείριση λογαριασμών και κατάστασης κλήσεων μέσω Διαδικτύου (SIP)"</string>
+    <string name="sip_receive_calls" msgid="5635685570889971559">"Λήψη εισερχόμενων κλήσεων"</string>
+    <string name="sip_receive_calls_summary" msgid="8403613238633679184">"Μειώνει τη διάρκεια ζωής της μπαταρίας"</string>
+    <string name="sip_call_options" msgid="7128315120104066133">"Διαμόρφωση ρυθμίσεων κλήσης"</string>
+    <string name="sip_call_options_title" msgid="27433718808839672">"Χρήση κλήσεων μέσω Διαδικτύου"</string>
+    <string name="sip_call_options_wifi_only_title" msgid="145572394529090811">"Κάντε χρήση της κλήσης μέσω Διαδικτύου (μόνο με Wi-Fi)"</string>
+    <string name="sip_call_options_entry_1" msgid="6556668894178520760">"Για όλες τις κλήσεις όταν το δίκτυο δεδομένων είναι διαθέσιμο"</string>
+    <string name="sip_call_options_entry_2" msgid="6789764029719494361">"Μόνο για κλήσεις μέσω Διαδικτύου"</string>
+    <string name="sip_call_options_entry_3" msgid="7474809001402649185">"Να ερωτώμαι για κάθε κλήση"</string>
+    <string name="sip_call_options_wifi_only_entry_1" msgid="7423523864471650069">"Για όλες τις κλήσεις"</string>
+    <string name="auto_reg" msgid="8150163311655081599">"Αυτόματη εγγραφή"</string>
+    <string name="call_priority" msgid="8374917577270504387">"Εξερχόμενη κλήση μέσω SIP"</string>
+    <string name="pick_outgoing_call_phone_type" msgid="5622916534828338675">"Πραγματοποίηση κλήσης"</string>
+    <string name="pick_outgoing_sip_phone" msgid="7012322118236208875">"Χρήση λογαριασμού κλήσης Διαδικτύου:"</string>
+    <string name="remember_my_choice" msgid="7058059586169290705">"Να χρησιμοποιείται πάντα για την πραγματοποίηση κλήσεων"</string>
+    <string name="reset_my_choice_hint" msgid="8522825056755061594">"Μπορείτε να χρησιμοποιήσετε τις Ρυθμίσεις κλήσεων για να αλλάξετε τον προεπιλεγμένο λογαριασμό κλήσεων μέσω διαδικτύου που θα χρησιμοποιείται κατά την πραγματοποίηση κλήσεων, επιλέγοντας διαφορετικό λογαριασμό από τις ρυθμίσεις κλήσεων μέσω Διαδικτύου"</string>
+    <string name="pstn_phone" msgid="8782554491484326429">"Κλήση από κινητό τηλέφωνο"</string>
+    <string name="internet_phone" msgid="1147922660195095810">"Κλήση Διαδικτύου"</string>
+    <string name="no_sip_account_found_title" msgid="6266249392379373628">"Δεν υπάρχει λογαριασμός κλήσης Διαδικτύου"</string>
+    <string name="no_sip_account_found" msgid="8777818244108212791">"Δεν υπάρχουν λογαριασμοί κλήσεων Διαδικτύου σε αυτό το τηλέφωνο. Να γίνει άμεση προσθήκη λογαριασμού;"</string>
+    <string name="sip_menu_add" msgid="8757508498518881500">"Προσθήκη"</string>
+    <string name="add_sip_account" msgid="5904858426290097611">"Προσθήκη λογαριασμού"</string>
+    <string name="remove_sip_account" msgid="7645900420385682570">"Κατάργηση λογαριασμού"</string>
+    <string name="sip_account_list" msgid="5480058210652194306">"Λογαριασμοί SIP"</string>
+    <string name="saving_account" msgid="7468818916695729968">"Αποθήκευση του λογαριασμού..."</string>
+    <string name="removing_account" msgid="5569334415898924904">"Κατάργηση του λογαριασμού..."</string>
+    <string name="sip_menu_save" msgid="5842531129356014943">"Αποθήκευση"</string>
+    <string name="sip_menu_discard" msgid="524075892158789701">"Απόρριψη"</string>
+    <string name="alert_dialog_close" msgid="7759635137627626235">"Κλείσιμο του προφίλ"</string>
+    <string name="alert_dialog_ok" msgid="3580379406983564080">"ΟΚ"</string>
+    <string name="close_profile" msgid="6886968271423155284">"Κλείσιμο"</string>
+    <string name="primary_account" msgid="2229538308291934245">"Κύριος"</string>
+    <string name="primary_account_title" msgid="5694267218020951531">"Μετατροπή αυτού του λογαριασμού σε κύριο"</string>
+    <string name="primary_account_summary" msgid="7339564526372623187">"Χρησιμοποιείται για εξερχόμενες κλήσεις"</string>
+    <string name="advanced_settings_title" msgid="8846648727128452293">"Σύνθετες ρυθμίσεις"</string>
+    <string name="primary_account_summary_with" msgid="1633960536212343187">"Βασικός λογαριασμός. <xliff:g id="REGISTRATION_STATUS">%s</xliff:g>"</string>
+    <string name="registration_status_checking_status" msgid="3381868307694056727">"Έλεγχος κατάστασης..."</string>
+    <string name="registration_status_registering" msgid="7115694971025999516">"Γίνεται εγγραφή..."</string>
+    <string name="registration_status_still_trying" msgid="1471733478935862864">"Η προσπάθεια συνεχίζεται..."</string>
+    <string name="registration_status_not_receiving" msgid="5011399017106466965">"Δεν γίνεται αποδοχή κλήσεων"</string>
+    <string name="registration_status_no_data" msgid="8279587001454092132">"Η εγγραφή λογαριασμού διεκόπη επειδή δεν υπάρχει σύνδεση στο Διαδίκτυο"</string>
+    <string name="registration_status_no_wifi_data" msgid="6698550648571450078">"Ο λογαριασμός εγγραφής διεκόπη επειδή δεν υπάρχει σύνδεση Wi-Fi"</string>
+    <string name="registration_status_not_running" msgid="272678962440371182">"Η εγγραφή λογαριασμού απέτυχε"</string>
+    <string name="registration_status_done" msgid="6434927607037752239">"Δέχεται κλήσεις"</string>
+    <string name="registration_status_failed_try_later" msgid="3045686593819835879">"Η εγγραφή λογαριασμού απέτυχε: (<xliff:g id="REGISTRATION_ERROR_MESSAGE">%s</xliff:g>). Θα επαναληφθεί αργότερα"</string>
+    <string name="registration_status_invalid_credentials" msgid="1830368411591265203">"Αποτυχία εγγραφής λογαριασμού: εσφαλμένο όνομα χρήστη ή κωδικός πρόσβασης"</string>
+    <string name="registration_status_server_unreachable" msgid="8173553259218123653">"Αποτυχία εγγραφής λογαριασμού: ελέγξτε το όνομα του διακομιστή"</string>
+    <string name="third_party_account_summary" msgid="1069915789382987226">"Αυτήν τη στιγμή ο λογαριασμός χρησιμοποιείται από την εφαρμογή <xliff:g id="ACCOUNT_OWNER">%s</xliff:g>"</string>
+    <string name="sip_edit_title" msgid="489288416435014385">"Πληροφορίες λογαριασμού SIP"</string>
+    <string name="sip_edit_new_title" msgid="3659149255856520385">"Πληροφορίες λογαριασμού SIP"</string>
+    <string name="domain_address_title" msgid="9071787581316160480">"Διακομιστής"</string>
+    <string name="username_title" msgid="2479375923477682328">"Όνομα χρήστη"</string>
+    <string name="password_title" msgid="3323555249068171531">"Κωδικός πρόσβασης"</string>
+    <string name="display_name_title" msgid="2459768196312249937">"Προβολή ονόματος"</string>
+    <string name="proxy_address_title" msgid="4828301345351614273">"Διεύθυνση διακομιστή μεσολάβησης εξερχομένων"</string>
+    <string name="port_title" msgid="5952939408078626657">"Αριθμός θύρας"</string>
+    <string name="transport_title" msgid="8253139511847746640">"Τύπος μεταφοράς"</string>
+    <string name="send_keepalive_title" msgid="7533342573918645113">"Αποστολή μηνυμάτων \"keep-alive\""</string>
+    <string name="send_keepalive_summary" msgid="9038969409950960640">"Αποστολή μηνυμάτων \"keep-alive\" στο διακομιστή SIP"</string>
+    <string name="auto_registration_title" msgid="3586777375420122154">"Αυτόματη εγγραφή"</string>
+    <string name="auto_registration_summary" msgid="2522794041206619280">"Αυτόματη εγγραφή του προφίλ"</string>
+    <string name="set_primary_title" msgid="5351892327447571451">"Ορισμός ως κυρίως λογαριασμού"</string>
+    <string name="set_primary_summary" msgid="2219064654523258577">"Χρησιμοποιείται για εξερχόμενες κλήσεις"</string>
+    <string name="advanced_settings" msgid="8350631795335495338">"Προαιρετικές ρυθμίσεις"</string>
+    <string name="default_preference_summary" msgid="868766740121667450">"&lt;Δεν έχει οριστεί&gt;"</string>
+    <string name="display_name_summary" msgid="8636377460518225523">"&lt;Ίδιο με το όνομα χρήστη&gt;"</string>
+    <string name="optional_summary" msgid="1464058793789832411">"&lt;Προαιρετικό&gt;"</string>
+    <string name="advanced_settings_show" msgid="4668880308290857597">"▷ Αγγίξτε για εμφάνιση όλων"</string>
+    <string name="advanced_settings_hide" msgid="217398292824758079">"▷ Αγγίξτε για απόκρυψη όλων"</string>
+    <string name="empty_alert" msgid="8177828109581557940">"Το πεδίο <xliff:g id="INPUT_FIELD_NAME">%s</xliff:g> απαιτείται, δεν μπορεί να είναι κενό"</string>
+    <string name="not_a_valid_port" msgid="5750410768271782606">"Ο αριθμός της θύρας θα πρέπει να είναι μεταξύ 1000 και 65534"</string>
+    <string name="no_internet_available_title" msgid="3327109242858406165">"Χωρίς σύνδεση στο Διαδίκτυο"</string>
+    <string name="no_wifi_available_title" msgid="747881033089378758">"Δεν υπάρχει σύνδεση Wi-Fi"</string>
+    <string name="no_internet_available" msgid="1100564991026313234">"Για να πραγματοποιήσετε μια κλήση μέσω Διαδικτύου, ελέγξτε πρώτα τη σύνδεσή σας στο Διαδίκτυο"</string>
+    <string name="no_wifi_available" msgid="3389743006886634541">"Για κλήσεις μέσω Διαδικτύου πρέπει να είστε συνδεδεμένοι σε δίκτυο Wi-Fi (χρησιμοποιήστε το στοιχείο Ασύρματο δίκτυο και Ρυθμίσεις δικτύου)"</string>
+    <string name="no_voip" msgid="8901474054537199865">"Η κλ. μέσω Διαδικτύου δεν υποστηρίζεται"</string>
 </resources>

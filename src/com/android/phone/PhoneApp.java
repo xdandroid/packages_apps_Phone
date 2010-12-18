@@ -52,14 +52,17 @@ import android.view.KeyEvent;
 import android.widget.Toast;
 
 import com.android.internal.telephony.Call;
+import com.android.internal.telephony.CallManager;
 import com.android.internal.telephony.IccCard;
 import com.android.internal.telephony.MmiCode;
 import com.android.internal.telephony.Phone;
 import com.android.internal.telephony.PhoneFactory;
 import com.android.internal.telephony.TelephonyIntents;
 import com.android.internal.telephony.cdma.EriInfo;
-import com.android.phone.OtaUtils.CdmaOtaScreenState;
 import com.android.internal.telephony.cdma.TtyIntent;
+import com.android.internal.telephony.sip.SipPhoneFactory;
+import com.android.phone.OtaUtils.CdmaOtaScreenState;
+import com.android.server.sip.SipService;
 
 /**
  * Top-level Application class for the Phone app.
@@ -80,8 +83,10 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
      * or else
      *   (PhoneApp.DBG_LEVEL >= 2)
      * depending on the desired verbosity.
+     *
+     * ***** DO NOT SUBMIT WITH DBG_LEVEL > 0 *************
      */
-    /* package */ static final int DBG_LEVEL = 1;
+    /* package */ static final int DBG_LEVEL = 0;
 
     private static final boolean DBG =
             (PhoneApp.DBG_LEVEL >= 1) && (SystemProperties.getInt("ro.debuggable", 0) == 1);
@@ -142,6 +147,7 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
     Ringer ringer;
     BluetoothHandsfree mBtHandsfree;
     PhoneInterfaceManager phoneMgr;
+    CallManager mCM;
     int mBluetoothHeadsetState = BluetoothHeadset.STATE_ERROR;
     int mBluetoothHeadsetAudioState = BluetoothHeadset.STATE_ERROR;
     boolean mShowBluetoothIndication = false;
@@ -265,6 +271,7 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
                     // Currently, this is triggered by a bluetooth headset
                     // state change (since the status bar icon needs to
                     // turn blue when bluetooth is active.)
+                    if (DBG) Log.d (LOG_TAG, "- updating in-call notification from handler...");
                     NotificationMgr.getDefault().updateInCallNotification();
                     break;
 
@@ -290,7 +297,7 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
                     // this on the wired headset connect / disconnect events for now
                     // though, so we're only triggering on EVENT_WIRED_HEADSET_PLUG.
 
-                    phoneState = phone.getState();
+                    phoneState = mCM.getState();
                     // Do not change speaker state if phone is not off hook
                     if (phoneState == Phone.State.OFFHOOK) {
                         if (mBtHandsfree == null || !mBtHandsfree.isAudioOn()) {
@@ -347,7 +354,7 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
                     if (VDBG) Log.d(LOG_TAG, "received EVENT_DOCK_STATE_CHANGED. Phone inDock = "
                             + inDockMode);
 
-                    phoneState = phone.getState();
+                    phoneState = mCM.getState();
                     if (phoneState == Phone.State.OFFHOOK &&
                             !isHeadsetPlugged() &&
                             !(mBtHandsfree != null && mBtHandsfree.isAudioOn())) {
@@ -397,9 +404,21 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
             // Get the default phone
             phone = PhoneFactory.getDefaultPhone();
 
+            mCM = CallManager.getInstance();
+            mCM.registerPhone(phone);
+
+
             NotificationMgr.init(this);
 
             phoneMgr = new PhoneInterfaceManager(this, phone);
+
+            // Starts the SIP service. It's a no-op if SIP API is not supported
+            // on the deivce.
+            // TODO: Having the phone process host the SIP service is only
+            // temporary. Will move it to a persistent communication process
+            // later.
+            SipService.start(this);
+
 
             int phoneType = phone.getPhoneType();
 
@@ -410,14 +429,14 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
             }
 
             if (BluetoothAdapter.getDefaultAdapter() != null) {
-                mBtHandsfree = new BluetoothHandsfree(this, phone);
+                mBtHandsfree = new BluetoothHandsfree(this, mCM);
                 startService(new Intent(this, BluetoothHeadsetService.class));
             } else {
                 // Device is not bluetooth capable
                 mBtHandsfree = null;
             }
 
-            ringer = new Ringer(phone);
+            ringer = new Ringer(this);
 
             // before registering for phone state changes
             PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
@@ -458,12 +477,10 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
             }
 
             // register for MMI/USSD
-            if (phoneType == Phone.PHONE_TYPE_GSM) {
-                phone.registerForMmiComplete(mHandler, MMI_COMPLETE, null);
-            }
+            mCM.registerForMmiComplete(mHandler, MMI_COMPLETE, null);
 
             // register connection tracking to PhoneUtils
-            PhoneUtils.initializeConnectionHandler(phone);
+            PhoneUtils.initializeConnectionHandler(mCM);
 
             // Read platform settings for TTY feature
             mTtyEnabled = getResources().getBoolean(R.bool.tty_enabled);
@@ -508,23 +525,7 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
             // Make sure the audio mode (along with some
             // audio-mode-related state of our own) is initialized
             // correctly, given the current state of the phone.
-            switch (phone.getState()) {
-                case IDLE:
-                    if (DBG) Log.d(LOG_TAG, "Resetting audio state/mode: IDLE");
-                    PhoneUtils.setAudioControlState(PhoneUtils.AUDIO_IDLE);
-                    PhoneUtils.setAudioMode(this, AudioManager.MODE_NORMAL);
-                    break;
-                case RINGING:
-                    if (DBG) Log.d(LOG_TAG, "Resetting audio state/mode: RINGING");
-                    PhoneUtils.setAudioControlState(PhoneUtils.AUDIO_RINGING);
-                    PhoneUtils.setAudioMode(this, AudioManager.MODE_RINGTONE);
-                    break;
-                case OFFHOOK:
-                    if (DBG) Log.d(LOG_TAG, "Resetting audio state/mode: OFFHOOK");
-                    PhoneUtils.setAudioControlState(PhoneUtils.AUDIO_OFFHOOK);
-                    PhoneUtils.setAudioMode(this, AudioManager.MODE_IN_CALL);
-                    break;
-            }
+            PhoneUtils.setAudioMode(mCM);
         }
 
         boolean phoneIsCdma = (phone.getPhoneType() == Phone.PHONE_TYPE_CDMA);
@@ -577,7 +578,7 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
         }
 
         // Update the Proximity sensor based on keyboard state
-        updateProximitySensorMode(phone.getState());
+        updateProximitySensorMode(mCM.getState());
         super.onConfigurationChanged(newConfig);
     }
 
@@ -586,6 +587,13 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
      */
     static PhoneApp getInstance() {
         return sMe;
+    }
+
+    /**
+     * Returns the Phone associated with this instance
+     */
+    static Phone getPhone() {
+        return getInstance().phone;
     }
 
     Ringer getRinger() {
@@ -635,33 +643,10 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
     /**
      * Starts the InCallScreen Activity.
      */
-    void displayCallScreen() {
+    private void displayCallScreen() {
         if (VDBG) Log.d(LOG_TAG, "displayCallScreen()...");
         startActivity(createInCallIntent());
         Profiler.callScreenRequested();
-    }
-
-    /**
-     * Helper function to check for one special feature of the CALL key:
-     * Normally, when the phone is idle, CALL takes you to the call log
-     * (see the handler for KEYCODE_CALL in PhoneWindow.onKeyUp().)
-     * But if the phone is in use (either off-hook or ringing) we instead
-     * handle the CALL button by taking you to the in-call UI.
-     *
-     * @return true if we intercepted the CALL keypress (i.e. the phone
-     *              was in use)
-     *
-     * @see DialerActivity#onCreate
-     */
-    boolean handleInCallOrRinging() {
-        if (phone.getState() != Phone.State.IDLE) {
-            // Phone is OFFHOOK or RINGING.
-            if (DBG) Log.v(LOG_TAG,
-                           "handleInCallOrRinging: show call screen");
-            displayCallScreen();
-            return true;
-        }
-        return false;
     }
 
     boolean isSimPinEnabled() {
@@ -707,11 +692,12 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
      */
     void dismissCallScreen() {
         if (mInCallScreen != null) {
-            if (mInCallScreen.isOtaCallInActiveState()
+            if ((phone.getPhoneType() == Phone.PHONE_TYPE_CDMA) &&
+                    (mInCallScreen.isOtaCallInActiveState()
                     || mInCallScreen.isOtaCallInEndState()
                     || ((cdmaOtaScreenState != null)
                     && (cdmaOtaScreenState.otaScreenState
-                            != CdmaOtaScreenState.OtaScreenState.OTA_STATUS_UNDEFINED))) {
+                            != CdmaOtaScreenState.OtaScreenState.OTA_STATUS_UNDEFINED)))) {
                 // TODO: During OTA Call, display should not become dark to
                 // allow user to see OTA UI update. Phone app needs to hold
                 // a SCREEN_DIM_WAKE_LOCK wake lock during the entire OTA call.
@@ -979,7 +965,7 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
      * Phone UI (e.g. whether or not the InCallScreen is active.)
      */
     /* package */ void updateWakeState() {
-        Phone.State state = phone.getState();
+        Phone.State state = mCM.getState();
 
         // True if the in-call UI is the foreground activity.
         // (Note this will be false if the screen is currently off,
@@ -1124,7 +1110,7 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
         // Note that we are beginning a new call, for proximity sensor support
         mBeginningCall = beginning;
         // Update the Proximity sensor based on mBeginningCall state
-        updateProximitySensorMode(phone.getState());
+        updateProximitySensorMode(mCM.getState());
     }
 
     /**
@@ -1166,10 +1152,13 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
                 boolean screenOnImmediately = (isHeadsetPlugged()
                             || PhoneUtils.isSpeakerOn(this)
                             || ((mBtHandsfree != null) && mBtHandsfree.isAudioOn())
-                            || mIsHardKeyboardOpen
-                            || mOrientation == AccelerometerListener.ORIENTATION_HORIZONTAL);
+                            || mIsHardKeyboardOpen);
+                // We do not keep the screen off when we are horizontal, but we do not force it
+                // on when we become horizontal until the proximity sensor goes negative.
+                boolean horizontal = (mOrientation == AccelerometerListener.ORIENTATION_HORIZONTAL);
 
-                if (((state == Phone.State.OFFHOOK) || mBeginningCall) && !screenOnImmediately) {
+                if (((state == Phone.State.OFFHOOK) || mBeginningCall) &&
+                        !screenOnImmediately && !horizontal) {
                     // Phone is in use!  Arrange for the screen to turn off
                     // automatically when the sensor detects a close object.
                     if (!mProximityWakeLock.isHeld()) {
@@ -1201,7 +1190,7 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
 
     public void orientationChanged(int orientation) {
         mOrientation = orientation;
-        updateProximitySensorMode(phone.getState());
+        updateProximitySensorMode(mCM.getState());
     }
 
     /**
@@ -1273,6 +1262,9 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
             if (cdmaOtaInCallScreenUiState == null) {
                 cdmaOtaInCallScreenUiState = new OtaUtils.CdmaOtaInCallScreenUiState();
             }
+        } else {
+            //Clean up OTA data in GSM/UMTS. It is valid only for CDMA
+            clearOtaState();
         }
 
         ringer.updateRingerContextAfterRadioTechnologyChange(this.phone);
@@ -1332,16 +1324,17 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
     /* package */ void updateBluetoothIndication(boolean forceUiUpdate) {
         mShowBluetoothIndication = shouldShowBluetoothIndication(mBluetoothHeadsetState,
                                                                  mBluetoothHeadsetAudioState,
-                                                                 phone);
+                                                                 mCM);
         if (forceUiUpdate) {
             // Post Handler messages to the various components that might
             // need to be refreshed based on the new state.
             if (isShowingCallScreen()) mInCallScreen.requestUpdateBluetoothIndication();
+            if (DBG) Log.d (LOG_TAG, "- updating in-call notification for BT state change...");
             mHandler.sendEmptyMessage(EVENT_UPDATE_INCALL_NOTIFICATION);
         }
 
         // Update the Proximity sensor based on Bluetooth audio state
-        updateProximitySensorMode(phone.getState());
+        updateProximitySensorMode(mCM.getState());
     }
 
     /**
@@ -1355,7 +1348,7 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
      */
     private static boolean shouldShowBluetoothIndication(int bluetoothState,
                                                          int bluetoothAudioState,
-                                                         Phone phone) {
+                                                         CallManager cm) {
         // We want the UI to indicate that "bluetooth is in use" in two
         // slightly different cases:
         //
@@ -1366,7 +1359,7 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
         //     and we expect that audio *will* be routed to a bluetooth
         //     headset once the call is answered.
 
-        switch (phone.getState()) {
+        switch (cm.getState()) {
             case OFFHOOK:
                 // This covers normal active calls, and also the case if
                 // the foreground call is DIALING or ALERTING.  In this
@@ -1521,7 +1514,7 @@ public class PhoneApp extends Application implements AccelerometerListener.Orien
                     abortBroadcast();
                 }
             } else {
-                if (phone.getState() != Phone.State.IDLE) {
+                if (mCM.getState() != Phone.State.IDLE) {
                     // If the phone is anything other than completely idle,
                     // then we consume and ignore any media key events,
                     // Otherwise it is too easy to accidentally start

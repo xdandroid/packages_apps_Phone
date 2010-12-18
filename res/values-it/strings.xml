@@ -30,6 +30,12 @@
     <string name="ongoing" msgid="8300874342848721367">"Chiamata corrente"</string>
     <string name="callFailed_userBusy" msgid="8851106999809294904">"Linea occupata"</string>
     <string name="callFailed_congestion" msgid="8737761615702718375">"Rete occupata"</string>
+    <string name="callFailed_timedOut" msgid="7590961703135543346">"Nessuna risposta, timeout"</string>
+    <string name="callFailed_server_unreachable" msgid="2133506577423869729">"Server non raggiungibile"</string>
+    <string name="callFailed_number_unreachable" msgid="7632566442515734778">"Numero non raggiungibile"</string>
+    <string name="callFailed_invalid_credentials" msgid="8226835346196775378">"Password o nome utente errato"</string>
+    <string name="callFailed_out_of_network" msgid="6485167392133436262">"Chiamata da fuori rete"</string>
+    <string name="callFailed_server_error" msgid="5717915213586193217">"Errore del server. Riprova più tardi."</string>
     <string name="callFailed_noSignal" msgid="1889803273616031933">"Nessun segnale"</string>
     <string name="callFailed_limitExceeded" msgid="4958065157970101491">"Limite ACM superato"</string>
     <string name="callFailed_powerOff" msgid="2766035859391549713">"Segnale cellulare disattivato"</string>
@@ -49,6 +55,7 @@
     <string name="callFailed_cdma_accessFailure" msgid="2844306027616452215">"CDMA: accesso non riuscito."</string>
     <string name="callFailed_cdma_preempted" msgid="1097095321180029879">"CDMA: annullato."</string>
     <string name="callFailed_cdma_notEmergency" msgid="2347377816822720761">"Sono possibili solo chiamate di emergenza."</string>
+    <string name="callFailed_unobtainable_number" msgid="7886274717456712105">"Numero non valido"</string>
     <string name="confCall" msgid="1904840547188336828">"Audioconferenza"</string>
     <string name="call_lost" msgid="317670617901479594">"La chiamata è stata persa."</string>
     <string name="retry" msgid="8462986804300767852">"Riprova"</string>
@@ -152,6 +159,7 @@
     <string name="reverting_settings" msgid="4752151682666912828">"Annullamento impostazioni..."</string>
     <string name="response_error" msgid="6674110501330139405">"Risposta imprevista dalla rete."</string>
     <string name="exception_error" msgid="7027667130619518211">"Errore di rete o della SIM."</string>
+    <string name="fdn_only_error" msgid="7079583506377602000">"Operazioni consentite solo sui numeri di selezione fissa."</string>
     <string name="radio_off_error" msgid="6717116288405111269">"Attiva il segnale cellulare per visualizzare queste impostazioni."</string>
     <string name="close_dialog" msgid="2365884406356986917">"OK"</string>
     <string name="enable" msgid="1059008390636773574">"Attiva"</string>
@@ -367,16 +375,16 @@
     <item msgid="5741268642513143762">"1"</item>
     <item msgid="419525200910932450">"2"</item>
   </string-array>
-    <string name="subscription_title" msgid="5813493350326486">"TEST abbonamento CDMA"</string>
-    <string name="subscription_summary" msgid="8435941016743418124">"Cambia tra RUIM/SIM e NV"</string>
-    <string name="subscription_dialogtitle" msgid="531571450448009255">"abbonamento"</string>
-  <string-array name="subscription_choices">
-    <item msgid="6540107472553796600">"RUIM/SIM"</item>
-    <item msgid="1433427108940308332">"NV"</item>
+    <string name="cdma_subscription_title" msgid="445607520753045412">"Abbonamento CDMA"</string>
+    <string name="cdma_subscription_summary" msgid="2530890766115781140">"Cambia tra RUIM/SIM e NV"</string>
+    <string name="cdma_subscription_dialogtitle" msgid="2699527950523333110">"abbonamento"</string>
+  <string-array name="cdma_subscription_choices">
+    <item msgid="2258014151300708431">"RUIM/SIM"</item>
+    <item msgid="5127722015571873880">"NV"</item>
   </string-array>
-  <string-array name="subscription_values">
-    <item msgid="4377788417250295786">"0"</item>
-    <item msgid="1193066664940329729">"1"</item>
+  <string-array name="cdma_subscription_values">
+    <item msgid="7494167883478914080">"0"</item>
+    <item msgid="6043847456049107742">"1"</item>
   </string-array>
     <string name="fdn" msgid="7878832555095183202">"Numeri selezione fissa (FDN)"</string>
     <string name="manage_fdn_list" msgid="8777755791892122369">"Elenco FDN"</string>
@@ -475,6 +483,7 @@
     <string name="notification_missedCallTicker" msgid="504686252427747209">"Chiamata senza risposta da <xliff:g id="MISSED_CALL_FROM">%s</xliff:g>"</string>
     <string name="notification_ongoing_call_format" msgid="227216462548540316">"Chiamata corrente (<xliff:g id="DURATION">%s</xliff:g>)"</string>
     <string name="notification_on_hold" msgid="3480694969511790465">"In attesa"</string>
+    <string name="notification_incoming_call" msgid="2820429205043529642">"Chiamata ricevuta"</string>
     <string name="notification_voicemail_title" msgid="8933468752045550523">"Nuovo msg vocale"</string>
     <string name="notification_voicemail_title_count" msgid="4366360747660929916">"Nuovo msg vocale (<xliff:g id="COUNT">%d</xliff:g>)"</string>
     <string name="notification_voicemail_text_format" msgid="4447323569453981685">"Componi <xliff:g id="VOICEMAIL_NUMBER">%s</xliff:g>"</string>
@@ -495,6 +504,7 @@
     <string name="incall_error_supp_service_conference" msgid="2505727299596357312">"Audioconferenze non disponibili"</string>
     <string name="incall_error_supp_service_reject" msgid="7055164130563826216">"Impossibile rifiutare la chiamata."</string>
     <string name="incall_error_supp_service_hangup" msgid="7417583238334762737">"Impossibile riprendere le chiamate."</string>
+    <string name="incall_call_type_label_sip" msgid="2310958283037924371">"Chiamata Internet"</string>
     <string name="emergency_enable_radio_dialog_title" msgid="4627849966634578257">"Chiamata di emergenza"</string>
     <string name="emergency_enable_radio_dialog_message" msgid="207613549344420291">"Attivazione segnale cellulare..."</string>
     <string name="emergency_enable_radio_dialog_retry" msgid="3724423402363063736">"Area non coperta dal servizio. Nuovo tentativo..."</string>
@@ -597,4 +607,86 @@
     <string name="slide_to_answer_and_end_onhold" msgid="638748048960663506">"Trascina a destra per rispondere e"\n"terminare la chiamata in attesa"</string>
     <string name="slide_to_answer_hint" msgid="4901042355463593903">"Risposta"</string>
     <string name="slide_to_decline_hint" msgid="4484576372463030324">"Rifiuta"</string>
+    <string name="contactPhoto" msgid="4713193418046639466">"foto contatto"</string>
+    <string name="goPrivate" msgid="865837794424530980">"Privato"</string>
+    <string name="selectContact" msgid="781975788478987237">"seleziona contatto"</string>
+    <string name="sip_settings" msgid="6699045718560859691">"Impostazioni chiamate Internet"</string>
+    <string name="sip_accounts" msgid="2097054001288457163">"Account di chiamata Internet (SIP)"</string>
+    <string name="sip_accounts_title" msgid="1212889069281054570">"Account"</string>
+    <string name="sip_accounts_summary" msgid="6812629993146552527">"Gestisci gli account di chiamata Internet (SIP) e lo stato"</string>
+    <string name="sip_receive_calls" msgid="5635685570889971559">"Ricevi chiamate in arrivo"</string>
+    <string name="sip_receive_calls_summary" msgid="8403613238633679184">"Riduce la durata della batteria"</string>
+    <string name="sip_call_options" msgid="7128315120104066133">"Configura opzioni di chiamata"</string>
+    <string name="sip_call_options_title" msgid="27433718808839672">"Utilizza chiamata Internet"</string>
+    <string name="sip_call_options_wifi_only_title" msgid="145572394529090811">"Usa chiamata Internet (solo Wi-Fi)"</string>
+    <string name="sip_call_options_entry_1" msgid="6556668894178520760">"Per tutte le chiamate quando è disponibile la rete dati"</string>
+    <string name="sip_call_options_entry_2" msgid="6789764029719494361">"Solo per chiamate Internet"</string>
+    <string name="sip_call_options_entry_3" msgid="7474809001402649185">"Chiedi per ogni chiamata"</string>
+    <string name="sip_call_options_wifi_only_entry_1" msgid="7423523864471650069">"Per tutte le chiamate"</string>
+    <string name="auto_reg" msgid="8150163311655081599">"Registrazione automatica"</string>
+    <string name="call_priority" msgid="8374917577270504387">"Chiamata in uscita tramite SIP"</string>
+    <string name="pick_outgoing_call_phone_type" msgid="5622916534828338675">"Effettua chiamata"</string>
+    <string name="pick_outgoing_sip_phone" msgid="7012322118236208875">"Usa account per chiamate Internet:"</string>
+    <string name="remember_my_choice" msgid="7058059586169290705">"Utilizza sempre per effettuare chiamate Internet"</string>
+    <string name="reset_my_choice_hint" msgid="8522825056755061594">"Puoi utilizzare le impostazioni di chiamata per cambiare l\'account per chiamate Internet da utilizzare per impostazione predefinita per effettuare chiamate, selezionando un altro account nelle impostazioni per le chiamate Internet."</string>
+    <string name="pstn_phone" msgid="8782554491484326429">"Chiamata con telefono cellulare"</string>
+    <string name="internet_phone" msgid="1147922660195095810">"Chiamata Internet"</string>
+    <string name="no_sip_account_found_title" msgid="6266249392379373628">"Nessun account per chiamate Internet"</string>
+    <string name="no_sip_account_found" msgid="8777818244108212791">"Non esistono account di chiamata Internet su questo telefono. Aggiungerne uno adesso?"</string>
+    <string name="sip_menu_add" msgid="8757508498518881500">"Aggiungi"</string>
+    <string name="add_sip_account" msgid="5904858426290097611">"Aggiungi account"</string>
+    <string name="remove_sip_account" msgid="7645900420385682570">"Rimuovi account"</string>
+    <string name="sip_account_list" msgid="5480058210652194306">"Account SIP"</string>
+    <string name="saving_account" msgid="7468818916695729968">"Salvataggio dell\'account in corso..."</string>
+    <string name="removing_account" msgid="5569334415898924904">"Rimozione dell\'account in corso..."</string>
+    <string name="sip_menu_save" msgid="5842531129356014943">"Salva"</string>
+    <string name="sip_menu_discard" msgid="524075892158789701">"Ignora"</string>
+    <string name="alert_dialog_close" msgid="7759635137627626235">"Chiudi il profilo"</string>
+    <string name="alert_dialog_ok" msgid="3580379406983564080">"OK"</string>
+    <string name="close_profile" msgid="6886968271423155284">"Chiudi"</string>
+    <string name="primary_account" msgid="2229538308291934245">"Principale"</string>
+    <string name="primary_account_title" msgid="5694267218020951531">"Imposta come account principale"</string>
+    <string name="primary_account_summary" msgid="7339564526372623187">"Utilizzato per le chiamate in uscita"</string>
+    <string name="advanced_settings_title" msgid="8846648727128452293">"Impostazioni avanzate"</string>
+    <string name="primary_account_summary_with" msgid="1633960536212343187">"Account principale. <xliff:g id="REGISTRATION_STATUS">%s</xliff:g>"</string>
+    <string name="registration_status_checking_status" msgid="3381868307694056727">"Controllo stato in corso..."</string>
+    <string name="registration_status_registering" msgid="7115694971025999516">"Registrazione in corso..."</string>
+    <string name="registration_status_still_trying" msgid="1471733478935862864">"Tentativo ancora in corso..."</string>
+    <string name="registration_status_not_receiving" msgid="5011399017106466965">"Ricezione chiamate non attiva"</string>
+    <string name="registration_status_no_data" msgid="8279587001454092132">"Registrazione account interrotta per mancanza di una connessione a Internet"</string>
+    <string name="registration_status_no_wifi_data" msgid="6698550648571450078">"Registrazione account interrotta per mancanza di una connessione Wi-Fi"</string>
+    <string name="registration_status_not_running" msgid="272678962440371182">"Registrazione account non riuscita"</string>
+    <string name="registration_status_done" msgid="6434927607037752239">"Ricezione chiamate attiva"</string>
+    <string name="registration_status_failed_try_later" msgid="3045686593819835879">"Registrazione account non riuscita: (<xliff:g id="REGISTRATION_ERROR_MESSAGE">%s</xliff:g>); più tardi verrà eseguito un nuovo tentativo"</string>
+    <string name="registration_status_invalid_credentials" msgid="1830368411591265203">"Registrazione account non riuscita: password o nome utente errato"</string>
+    <string name="registration_status_server_unreachable" msgid="8173553259218123653">"Registrazione account non riuscita: verifica il nome del server"</string>
+    <string name="third_party_account_summary" msgid="1069915789382987226">"Questo account è attualmente utilizzato dall\'applicazione <xliff:g id="ACCOUNT_OWNER">%s</xliff:g>"</string>
+    <string name="sip_edit_title" msgid="489288416435014385">"Dettagli account SIP"</string>
+    <string name="sip_edit_new_title" msgid="3659149255856520385">"Dettagli account SIP"</string>
+    <string name="domain_address_title" msgid="9071787581316160480">"Server"</string>
+    <string name="username_title" msgid="2479375923477682328">"Nome utente"</string>
+    <string name="password_title" msgid="3323555249068171531">"Password"</string>
+    <string name="display_name_title" msgid="2459768196312249937">"Nome visualizzato"</string>
+    <string name="proxy_address_title" msgid="4828301345351614273">"Indirizzo proxy in uscita"</string>
+    <string name="port_title" msgid="5952939408078626657">"Numero porta"</string>
+    <string name="transport_title" msgid="8253139511847746640">"Tipo trasporto"</string>
+    <string name="send_keepalive_title" msgid="7533342573918645113">"Invia keep-alive"</string>
+    <string name="send_keepalive_summary" msgid="9038969409950960640">"Invia messaggi keep-alive SIP"</string>
+    <string name="auto_registration_title" msgid="3586777375420122154">"Registrazione automatica"</string>
+    <string name="auto_registration_summary" msgid="2522794041206619280">"Registra automaticamente il profilo"</string>
+    <string name="set_primary_title" msgid="5351892327447571451">"Imposta come account principale"</string>
+    <string name="set_primary_summary" msgid="2219064654523258577">"Utilizzato per chiamate in uscita"</string>
+    <string name="advanced_settings" msgid="8350631795335495338">"Impostazioni facoltative"</string>
+    <string name="default_preference_summary" msgid="868766740121667450">"&lt;Non impostato&gt;"</string>
+    <string name="display_name_summary" msgid="8636377460518225523">"&lt;Uguale al nome utente&gt;"</string>
+    <string name="optional_summary" msgid="1464058793789832411">"&lt;Facoltativo&gt;"</string>
+    <string name="advanced_settings_show" msgid="4668880308290857597">"▷ Tocca per mostrare tutto"</string>
+    <string name="advanced_settings_hide" msgid="217398292824758079">"▽ Tocca per nascondere tutto"</string>
+    <string name="empty_alert" msgid="8177828109581557940">"<xliff:g id="INPUT_FIELD_NAME">%s</xliff:g> è obbligatorio e non può essere lasciato vuoto"</string>
+    <string name="not_a_valid_port" msgid="5750410768271782606">"Il numero della porta deve essere compreso tra 1000 e 65534"</string>
+    <string name="no_internet_available_title" msgid="3327109242858406165">"Nessuna connessione Internet"</string>
+    <string name="no_wifi_available_title" msgid="747881033089378758">"Nessuna connessione Wi-Fi"</string>
+    <string name="no_internet_available" msgid="1100564991026313234">"Prima di effettuare una chiamata via Internet controlla la tua connessione a Internet"</string>
+    <string name="no_wifi_available" msgid="3389743006886634541">"Devi essere collegato a una rete Wi-Fi per effettuare chiamate via Internet (utilizza le Impostazioni wireless e reti)"</string>
+    <string name="no_voip" msgid="8901474054537199865">"Chiamate Internet non supportate"</string>
 </resources>

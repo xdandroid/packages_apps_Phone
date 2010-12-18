@@ -47,6 +47,18 @@
     <string name="callFailed_userBusy">Line busy</string>
     <!-- In-call screen: call failure reason (network congestion) -->
     <string name="callFailed_congestion">Network busy</string>
+    <!-- In-call screen: call failure reason (client timed out) -->
+    <string name="callFailed_timedOut">No response, timed out</string>
+    <!-- In-call screen: call failure reason (server unreachable) -->
+    <string name="callFailed_server_unreachable">Server unreachable</string>
+    <!-- In-call screen: call failure reason (peer unreachable) -->
+    <string name="callFailed_number_unreachable">Number unreachable</string>
+    <!-- In-call screen: call failure reason (incorrect username or password) -->
+    <string name="callFailed_invalid_credentials">Incorrect username or password</string>
+    <!-- In-call screen: call failure reason (calling from out of network is not allowed) -->
+    <string name="callFailed_out_of_network">Called from out of network</string>
+    <!-- In-call screen: call failure reason (server error) -->
+    <string name="callFailed_server_error">Server error. Try again later.</string>
     <!-- In-call screen: call failure reason (no signal) -->
     <string name="callFailed_noSignal">No signal</string>
     <!-- In-call screen: call failure reason (GSM ACM limit exceeded) -->
@@ -85,6 +97,8 @@
     <string name="callFailed_cdma_preempted">CDMA: Preempted.</string>
     <!-- In-call screen: call failure reason (Only Emergency calls are possible)-->
     <string name="callFailed_cdma_notEmergency">Only Emergency calls are possible.</string>
+    <!-- In-call screen: call failure reason (Dialed number doesn't exist) -->
+    <string name="callFailed_unobtainable_number">Invalid Number</string>
     <!-- In-call screen: status label for a conference call -->
     <string name="confCall">Conference call</string>
     <!-- In-call screen: call lost dialog text -->
@@ -323,6 +337,8 @@
     <string name="response_error">Unexpected response from network.</string>
     <!-- Status message displayed in the "Call settings error" dialog -->
     <string name="exception_error">Network or SIM card error.</string>
+    <!-- Status message displayed in the "Call settings error" dialog when operation fails due to FDN -->
+    <string name="fdn_only_error">Operations are only allowed on fixed dialing numbers.</string>
     <!-- Status message displayed in the "Call settings error" dialog -->
     <string name="radio_off_error">Please turn on the radio before viewing these settings.</string>
     <!-- Button label used to dismiss the "Call settings error" dialog -->
@@ -655,14 +671,14 @@
         <item>"1"</item>
         <item>"2"</item>
     </string-array>
-    <string name="subscription_title">CDMA Subscription TEST</string>
-    <string name="subscription_summary">Change between RUIM/SIM and NV</string>
-    <string name="subscription_dialogtitle">subscription</string>
-    <string-array name="subscription_choices">
+    <string name="cdma_subscription_title">CDMA Subscription</string>
+    <string name="cdma_subscription_summary">Change between RUIM/SIM and NV</string>
+    <string name="cdma_subscription_dialogtitle">subscription</string>
+    <string-array name="cdma_subscription_choices">
         <item>RUIM/SIM</item>
         <item>NV</item>
     </string-array>
-    <string-array name="subscription_values">
+    <string-array name="cdma_subscription_values">
         <item>"0"</item>
         <item>"1"</item>
     </string-array>
@@ -882,6 +898,8 @@
     <string name="notification_ongoing_call_format">Current call (<xliff:g id="duration">%s</xliff:g>)</string>
     <!-- The "label" of the in-call Notification for a call that's on hold -->
     <string name="notification_on_hold">On hold</string>
+    <!-- The "label" of the in-call Notification for an incoming ringing call -->
+    <string name="notification_incoming_call">Incoming call</string>
     <!-- Label for the "Voicemail" notification item, when expanded. -->
     <string name="notification_voicemail_title">New voicemail</string>
     <!-- Label for the expanded "Voicemail" notification item,
@@ -928,6 +946,9 @@
     <string name="incall_error_supp_service_reject">Unable to reject call.</string>
     <!-- In-call screen: message displayed in an error dialog -->
     <string name="incall_error_supp_service_hangup">Unable to release call(s).</string>
+
+    <!-- In-call screen: "call type" indication for a SIP call [CHAR LIMIT=30]  -->
+    <string name="incall_call_type_label_sip">Internet call</string>
 
     <!-- Dialog title for the "radio enable" UI for emergency calls -->
     <string name="emergency_enable_radio_dialog_title">Emergency call</string>
@@ -1189,4 +1210,221 @@
     <!-- Incoming call hint shown on tab (must be kept very short): decline incoming call -->
     <string name="slide_to_decline_hint">Decline</string>
 
+    <!-- Use this as a default to describe the contact photo; currently for screen readers through accessibility. -->
+    <string name="contactPhoto">contact photo</string>
+    <!-- Use this to describe the separate conference call button; currently for screen readers through accessibility. -->
+    <string name="goPrivate">go private</string>
+    <!--  Use this to describe the select contact button in EditPhoneNumberPreference; currently for screen readers through accessibility. -->
+    <string name="selectContact">select contact</string>
+
+
+    <!-- Start of SIP related strings defined from here. -->
+
+    <!-- Title displayed SIP settings coming after other call settings in the call features screen. [CHAR LIMIT=NONE] -->
+    <string name="sip_settings">Internet call settings</string>
+    <!-- Title displayed SIP account settings in the sip settings category. [CHAR LIMIT=NONE] -->
+    <string name="sip_accounts">Internet calling (SIP) accounts</string>
+    <!-- Title displayed SIP account settings in the sip settings category. [CHAR LIMIT=NONE] -->
+    <string name="sip_accounts_title">Accounts</string>
+    <!-- The Sip Account Settings's summary. [CHAR LIMIT=NONE] -->
+    <string name="sip_accounts_summary">Manage Internet calling (SIP) accounts and status</string>
+    <!-- Title displayed for the button of receiving incoming SIP calls flag. Enabled for receiving calls. [CHAR LIMIT=NONE] -->
+    <string name="sip_receive_calls">Receive incoming calls</string>
+    <!-- Help user to understand that it will require more battery usage if the 'receiving incoming call' is enabled. [CHAR LIMIT=NONE] -->
+    <string name="sip_receive_calls_summary">Reduces battery life</string>
+    <!-- Title for the button of configuring the way we handle an outgoing call. [CHAR LIMIT=NONE] -->
+    <string name="sip_call_options">Configure call options</string>
+    <!-- Title for the dialog of selecting the way we handle an outgoing call. [CHAR LIMIT=NONE] -->
+    <string name="sip_call_options_title">Use Internet calling</string>
+    <!-- Title for the dialog of selecting the way we handle an outgoing call (Wi-Fi only). [CHAR LIMIT=NONE] -->
+    <string name="sip_call_options_wifi_only_title">Use Internet calling (Wi-Fi only)</string>
+
+    <!-- Item of the Internet call option dialog: for routing all outgoing calls via SIP. [CHAR LIMIT=NONE] -->
+    <string name="sip_call_options_entry_1">For all calls when data network is available</string>
+    <!-- Item of the Internet call option dialog: for routing a outgoing call via SIP if the destination is a SIP URI. [CHAR LIMIT=NONE] -->
+    <string name="sip_call_options_entry_2">Only for Internet calls</string>
+    <!-- Item of the Internet call option dialog: for asking user to select the way for each outgoing call. [CHAR LIMIT=NONE] -->
+    <string name="sip_call_options_entry_3">Ask for each call</string>
+    <!-- Item of the Internet call (Wi-Fi only) option dialog: for routing all outgoing calls via SIP. [CHAR LIMIT=NONE] -->
+    <string name="sip_call_options_wifi_only_entry_1">For all calls</string>
+
+    <!-- Title for enabling the auto registration for all sip accounts.  [CHAR LIMIT=NONE] -->
+    <string name="auto_reg">Auto-registration</string>
+    <!-- Title for enabling the routing all outgoing calls via SIP. [CHAR LIMIT=NONE] -->
+    <string name="call_priority">Outgoing call via SIP</string>
+
+    <!-- Title of the dialog to select the phone type for the outgoing call. [CHAR LIMIT=NONE] -->
+    <string name ="pick_outgoing_call_phone_type">Place call</string>
+
+    <!-- Title of the dialog to select the phone among the list of phones for the outgoing call. [CHAR LIMIT=NONE] -->
+    <string name ="pick_outgoing_sip_phone">Use Internet calling account:</string>
+
+    <!-- Text of checkbox to remember the sip phone for all outbound calls. [CHAR LIMIT=NONE] -->
+    <string name ="remember_my_choice">Always use to place Internet calls</string>
+
+    <!-- Help text of checkbox to unset the default sip phone for all outbound calls. [CHAR LIMIT=NONE] -->
+    <string name ="reset_my_choice_hint">You can use the Call Settings to change which Internet calling account to use by default when placing calls, by selecting a different account under Internet call settings</string>
+
+    <!-- Item of the dialog to select the phone type for outgoing call. [CHAR LIMIT=NONE] -->
+    <string name ="pstn_phone">Cell phone call</string>
+
+    <!-- Item of the dialog to select the phone type for outgoing call. [CHAR LIMIT=NONE] -->
+    <string name ="internet_phone">Internet call</string>
+
+    <!-- Title of the dialog to redirect the user to SIP settings. [CHAR LIMIT=NONE] -->
+    <string name ="no_sip_account_found_title">No Internet calling account</string>
+    <!-- Message of the dialog to redirect the user to SIP settings. [CHAR LIMIT=NONE] -->
+    <string name ="no_sip_account_found">There are no Internet calling accounts on this phone.  Add one now?</string>
+    <!-- Menu item for no sip account found dialog -->
+    <string name="sip_menu_add">Add</string>
+
+    <!-- Title for the button to add a new sip account. [CHAR LIMIT=NONE] -->
+    <string name="add_sip_account">Add account</string>
+    <!-- Title for the button to remove a sip account. [CHAR LIMIT=NONE] -->
+    <string name="remove_sip_account">Remove account</string>
+    <!-- String of the category which lists all sip accounts. [CHAR LIMIT=NONE] -->
+    <string name="sip_account_list">SIP accounts</string>
+    <!-- Toast message to indicate that the system is saving the account. [CHAR LIMIT=NONE] -->
+    <string name="saving_account">Saving the account...</string>
+    <!-- Toast message to indicate that the system is removing the account. [CHAR LIMIT=NONE] -->
+    <string name="removing_account">Removing the account...</string>
+
+    <!-- Menu item when the menu button is pressed in the sip account editor. [CHAR LIMIT=NONE] -->
+    <string name="sip_menu_save">Save</string>
+    <!-- Menu item when the menu button is pressed in the sip account editor. [CHAR LIMIT=NONE] -->
+    <string name="sip_menu_discard">Discard</string>
+
+    <!-- Title of the alert dialog. [CHAR LIMIT=NONE] -->
+    <string name="alert_dialog_close">Close the profile</string>
+    <!-- Title of the button to show in a alert dialog. [CHAR LIMIT=NONE] -->
+    <string name="alert_dialog_ok">OK</string>
+    <!-- Title of the button to show in a alert dialog. [CHAR LIMIT=NONE] -->
+    <string name="close_profile">Close</string>
+
+    <!-- Text of the account type. 'Primary' means the account is the one for sending all outgoing calls through. [CHAR LIMIT=NONE] -->
+    <string name="primary_account">Primary</string>
+    <!-- Title of the account type checkbox. Once the box is checked, the account will be the only 'primary' one among the accounts. [CHAR LIMIT=NONE] -->
+    <string name="primary_account_title">Make this my primary account</string>
+    <!-- Summary text of the account type checkbox. [CHAR LIMIT=NONE] -->
+    <string name="primary_account_summary">Used for outbound calls</string>
+    <!-- Title of the advanced settings button. The button will show the advanced settings of a SIP account in the SIP editor [CHAR LIMIT=NONE] -->
+    <string name="advanced_settings_title">Advanced settings</string>
+    <!-- Summary of a SIP account in the list of SIP accounts, consists of primary account status and registration status. This string indicates that this SIP account is a primary account and the string placeholder is the registration status, which will be one of the strings with name starting with "registration_status_" below. [CHAR LIMIT=NONE] -->
+    <string name="primary_account_summary_with">Primary account. <xliff:g id="registration_status" example="Registering...">%s</xliff:g></string>
+    <!-- Text of Internet-call registration status, checking current registration status with SIP service [CHAR LIMIT=NONE] -->
+    <string name="registration_status_checking_status">Checking status...</string>
+    <!-- Text of Internet-call registration status, registering with SIP server in order to receive calls on this account [CHAR LIMIT=NONE] -->
+    <string name="registration_status_registering">Registering...</string>
+    <!-- Text of Internet-call registration status, still trying to register with SIP server [CHAR LIMIT=NONE] -->
+    <string name="registration_status_still_trying">Still trying...</string>
+    <!-- Text of Internet-call registration status, currently not receiving calls on this account [CHAR LIMIT=NONE] -->
+    <string name="registration_status_not_receiving">Not receiving calls</string>
+    <!-- Text of Internet-call registration status, no data connection [CHAR LIMIT=NONE] -->
+    <string name="registration_status_no_data">Account registration stopped because there is no Internet connection</string>
+    <!-- Text of Internet-call registration status, no Wi-Fi connection [CHAR LIMIT=NONE] -->
+    <string name="registration_status_no_wifi_data">Account registration stopped because there is no Wi-Fi connection</string>
+    <!-- Text of Internet-call registration status, registration process is not running due to some error [CHAR LIMIT=NONE] -->
+    <string name="registration_status_not_running">Account registration failed</string>
+    <!-- Text of Internet-call registration status, currently we can receive calls on this account [CHAR LIMIT=NONE] -->
+    <string name="registration_status_done">Receiving calls</string>
+    <!-- Text of Internet-call registration status, registration failed with a reason; will try again later [CHAR LIMIT=NONE] -->
+    <string name="registration_status_failed_try_later">Account registration failed: (<xliff:g id="registration_error_message" example="timed out">%s</xliff:g>); will try later</string>
+    <!-- Text of Internet-call registration status, registration failed due to invalid credentials [CHAR LIMIT=NONE] -->
+    <string name="registration_status_invalid_credentials">Account registration failed: incorrect username or password</string>
+    <!-- Text of Internet-call registration status, registration failed due to unknown host exception [CHAR LIMIT=NONE] -->
+    <string name="registration_status_server_unreachable">Account registration failed: please check the server name</string>
+    <!-- Text for describing the account's owner and status. For example, 'Active, in use by Google Talk', it means that the account managed by SIP service was registered by the application 'Google Talk' and the status is active. [CHAR LIMIT=NONE] -->
+    <string name="third_party_account_summary">This account is currently in use by the <xliff:g id="account_owner" example="Google Talk">%s</xliff:g> application</string>
+
+
+    <!-- Title of the sip editor screen. [CHAR LIMIT=NONE] -->
+    <string name="sip_edit_title">SIP account details</string>
+    <!-- Title of the sip editor screen. [CHAR LIMIT=NONE] -->
+    <string name="sip_edit_new_title">SIP account details</string>
+
+    <!-- Text of the domain address preference. [CHAR LIMIT=NONE] -->
+    <string name="domain_address_title">Server</string>
+    <!-- Text of the username preference. [CHAR LIMIT=NONE] -->
+    <string name="username_title">Username</string>
+    <!-- Text of the password preference. [CHAR LIMIT=NONE] -->
+    <string name="password_title">Password</string>
+    <!-- Text of the display name preference. [CHAR LIMIT=NONE] -->
+    <string name="display_name_title">Display name</string>
+    <!-- Text of the outbound proxy address preference. [CHAR LIMIT=NONE] -->
+    <string name="proxy_address_title">Outbound proxy address</string>
+    <!-- Text of the sip server/proxy port number. [CHAR LIMIT=NONE] -->
+    <string name="port_title">Port number</string>
+    <!-- Text of the transport type preference. [CHAR LIMIT=NONE] -->
+    <string name="transport_title">Transport type</string>
+    <!-- Text of the keepalive preference. [CHAR LIMIT=NONE] -->
+    <string name="send_keepalive_title">Send keep-alive</string>
+    <!-- Text of the keepalive preference summary. [CHAR LIMIT=NONE] -->
+    <string name="send_keepalive_summary">Send SIP keep-alive messages</string>
+    <!-- Text of the auto registration preference. [CHAR LIMIT=NONE] -->
+    <string name="auto_registration_title">Auto-registration</string>
+    <!-- Text of the auto registration preference summary. [CHAR LIMIT=NONE] -->
+    <string name="auto_registration_summary">Register the profile automatically</string>
+    <!-- Text of the set-primary preference. Simplified from "Make this my primary account". [CHAR LIMIT=NONE] -->
+    <string name="set_primary_title">Set as primary account</string>
+    <!-- Text of the set-primary preference summary. [CHAR LIMIT=NONE] -->
+    <string name="set_primary_summary">Used for outbound calls</string>
+    <!-- Text of the advanced settings section. [CHAR LIMIT=NONE] -->
+    <string name="advanced_settings">Optional settings</string>
+
+    <!-- Initial status of the preferences is '<Not set>'. [CHAR LIMIT=NONE] -->
+    <string name="default_preference_summary">&lt;Not set&gt;</string>
+    <!-- Default value for the display-name preference summary. [CHAR LIMIT=NONE] -->
+    <string name="display_name_summary">&lt;Same as username&gt;</string>
+    <!-- Default value for the outbound-proxy-address preference summary. [CHAR LIMIT=NONE] -->
+    <string name="optional_summary">&lt;Optional&gt;</string>
+
+    <!-- Default sip server/proxy port number. -->
+    <string translatable="false" name="default_port">5060</string>
+    <!-- Default sip server/proxy transport protocol. -->
+    <string translatable="false" name="default_transport">UDP</string>
+
+
+    <!-- Hint to show the advanced settings section. [CHAR LIMIT=NONE] -->
+    <string name="advanced_settings_show">▷ Touch to show all</string>
+    <!-- Hint to hide the advanced settings section. [CHAR LIMIT=NONE] -->
+    <string name="advanced_settings_hide">▽ Touch to hide all</string>
+
+    <!-- Text in an alert dialog telling the user that some input field (name of which is also part of the strings being translated above) is required and can not be left blank. [CHAR LIMIT=NONE] -->
+    <string name="empty_alert"><xliff:g id="input_field_name" example="Username, Password...">%s</xliff:g> is required, cannot be left blank</string>
+    <!-- Showing that port number is out of range in an alert dialog. [CHAR LIMIT=NONE] -->
+    <string name="not_a_valid_port">Port number should be within 1000 and 65534</string>
+
+    <!-- Title of the alert dialog to notify user that there is no Internet connectivity. [CHAR LIMIT=40] -->
+    <string name="no_internet_available_title">No Internet connection</string>
+    <!-- Title of the alert dialog to notify user that there is no Wi-Fi connectivity. [CHAR LIMIT=40] -->
+    <string name="no_wifi_available_title">No Wi-Fi connection</string>
+    <!-- Message of the alert dialog to notify user that there is no Internet connectivity. [CHAR LIMIT=NONE] -->
+    <string name="no_internet_available">To place an Internet call, check your Internet connection first</string>
+    <!-- Message of the alert dialog to notify user that there is no Wi-Fi connectivity. [CHAR LIMIT=NONE] -->
+    <string name="no_wifi_available">You must be connected to a Wi-Fi network for Internet calls (use the Wireless &amp; Network settings)</string>
+    <!-- Title of the alert dialog to notify user that Internet call is not supported. [CHAR LIMIT=40] -->
+    <string name="no_voip">Internet calling not supported</string>
+
+    <!-- Do not translate the following strings. Used for the Internet call options. Need to be in-sync with Settings.System.SIP_ strings. -->
+    <string translatable="false" name="sip_always">SIP_ALWAYS</string>
+    <string translatable="false" name="sip_address_only">SIP_ADDRESS_ONLY</string>
+    <string translatable="false" name="sip_ask_me_each_time">SIP_ASK_ME_EACH_TIME</string>
+
+    <!-- Do not translate the following strings. Used for SIP send-keepalive option values -->
+    <string translatable="false" name="sip_system_decide">Automatic</string>
+    <string translatable="false" name="sip_always_send_keepalive">Always send</string>
+
+    <!-- Do not translate the following strings. Used for the preference keys -->
+    <string translatable="false" name="domain_address">SipDomain</string>
+    <string translatable="false" name="username">UserName</string>
+    <string translatable="false" name="password">Password</string>
+    <string translatable="false" name="display_name">DisplayName</string>
+    <string translatable="false" name="proxy_address">ProxyAddress</string>
+    <string translatable="false" name="port">Port</string>
+    <string translatable="false" name="transport">Protocol</string>
+    <string translatable="false" name="send_keepalive">SendKeepAlive</string>
+    <string translatable="false" name="auto_registration">AutoRegistration</string>
+    <string translatable="false" name="set_primary">SetPrimary</string>
+    <string translatable="false" name="advanced_settings_container">advanced settings container</string>
+    <!-- End of SIP settings related strings -->
 </resources>

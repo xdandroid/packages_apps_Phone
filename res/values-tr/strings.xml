@@ -30,6 +30,12 @@
     <string name="ongoing" msgid="8300874342848721367">"Geçerli çağrı"</string>
     <string name="callFailed_userBusy" msgid="8851106999809294904">"Hat meşgul"</string>
     <string name="callFailed_congestion" msgid="8737761615702718375">"Ağ meşgul"</string>
+    <string name="callFailed_timedOut" msgid="7590961703135543346">"Yanıt yok, zaman aşımı oluştu"</string>
+    <string name="callFailed_server_unreachable" msgid="2133506577423869729">"Sunucuya ulaşılamıyor"</string>
+    <string name="callFailed_number_unreachable" msgid="7632566442515734778">"Numaraya ulaşılamıyor"</string>
+    <string name="callFailed_invalid_credentials" msgid="8226835346196775378">"Hatalı kullanıcı adı veya şifre"</string>
+    <string name="callFailed_out_of_network" msgid="6485167392133436262">"Çağrı, ağın dışından yapıldı"</string>
+    <string name="callFailed_server_error" msgid="5717915213586193217">"Sunucu hatası. Daha sonra tekrar deneyin."</string>
     <string name="callFailed_noSignal" msgid="1889803273616031933">"Sinyal yok"</string>
     <string name="callFailed_limitExceeded" msgid="4958065157970101491">"ACM sınırı aşıldı"</string>
     <string name="callFailed_powerOff" msgid="2766035859391549713">"Radyo kapalı"</string>
@@ -49,6 +55,7 @@
     <string name="callFailed_cdma_accessFailure" msgid="2844306027616452215">"CDMA: Erişim hatası."</string>
     <string name="callFailed_cdma_preempted" msgid="1097095321180029879">"CDMA: Değiştirildi."</string>
     <string name="callFailed_cdma_notEmergency" msgid="2347377816822720761">"Yalnızca acil çağrı yapılabilir."</string>
+    <string name="callFailed_unobtainable_number" msgid="7886274717456712105">"Geçersiz Numara"</string>
     <string name="confCall" msgid="1904840547188336828">"Konferans görüşmesi"</string>
     <string name="call_lost" msgid="317670617901479594">"Çağrı istemeden sonlandırıldı."</string>
     <string name="retry" msgid="8462986804300767852">"Tekrar Dene"</string>
@@ -152,6 +159,7 @@
     <string name="reverting_settings" msgid="4752151682666912828">"Ayarlar geri alınıyor..."</string>
     <string name="response_error" msgid="6674110501330139405">"Ağdan beklenmeyen yanıt."</string>
     <string name="exception_error" msgid="7027667130619518211">"Ağ veya SIM kart hatası."</string>
+    <string name="fdn_only_error" msgid="7079583506377602000">"İşlemlere sadece sabit arama numaralarında izin verilir."</string>
     <string name="radio_off_error" msgid="6717116288405111269">"Bu ayarları görüntülemeden önce lütfen radyoyu açın."</string>
     <string name="close_dialog" msgid="2365884406356986917">"Tamam"</string>
     <string name="enable" msgid="1059008390636773574">"Etkinleştir"</string>
@@ -367,16 +375,16 @@
     <item msgid="5741268642513143762">"1"</item>
     <item msgid="419525200910932450">"2"</item>
   </string-array>
-    <string name="subscription_title" msgid="5813493350326486">"CDMA Abonelik TESTİ"</string>
-    <string name="subscription_summary" msgid="8435941016743418124">"RUIM/SIM ve NV arasında değiştir"</string>
-    <string name="subscription_dialogtitle" msgid="531571450448009255">"abonelik"</string>
-  <string-array name="subscription_choices">
-    <item msgid="6540107472553796600">"RUIM/SIM"</item>
-    <item msgid="1433427108940308332">"NV"</item>
+    <string name="cdma_subscription_title" msgid="445607520753045412">"CDMA Aboneliği"</string>
+    <string name="cdma_subscription_summary" msgid="2530890766115781140">"RUIM/SIM ve NV arasında değiştir"</string>
+    <string name="cdma_subscription_dialogtitle" msgid="2699527950523333110">"abonelik"</string>
+  <string-array name="cdma_subscription_choices">
+    <item msgid="2258014151300708431">"RUIM/SIM"</item>
+    <item msgid="5127722015571873880">"NV"</item>
   </string-array>
-  <string-array name="subscription_values">
-    <item msgid="4377788417250295786">"0"</item>
-    <item msgid="1193066664940329729">"1"</item>
+  <string-array name="cdma_subscription_values">
+    <item msgid="7494167883478914080">"0"</item>
+    <item msgid="6043847456049107742">"1"</item>
   </string-array>
     <string name="fdn" msgid="7878832555095183202">"Sabit Arama Numaraları"</string>
     <string name="manage_fdn_list" msgid="8777755791892122369">"SAN listesi"</string>
@@ -475,6 +483,7 @@
     <string name="notification_missedCallTicker" msgid="504686252427747209">"Cevapsız çağrı: <xliff:g id="MISSED_CALL_FROM">%s</xliff:g>"</string>
     <string name="notification_ongoing_call_format" msgid="227216462548540316">"Geçerli çağrı (<xliff:g id="DURATION">%s</xliff:g>)"</string>
     <string name="notification_on_hold" msgid="3480694969511790465">"Beklemede"</string>
+    <string name="notification_incoming_call" msgid="2820429205043529642">"Gelen çağrı"</string>
     <string name="notification_voicemail_title" msgid="8933468752045550523">"Yeni sesli mesaj"</string>
     <string name="notification_voicemail_title_count" msgid="4366360747660929916">"Yeni sesli mesaj (<xliff:g id="COUNT">%d</xliff:g>)"</string>
     <string name="notification_voicemail_text_format" msgid="4447323569453981685">"Çevir: <xliff:g id="VOICEMAIL_NUMBER">%s</xliff:g>"</string>
@@ -495,6 +504,7 @@
     <string name="incall_error_supp_service_conference" msgid="2505727299596357312">"Çağrılar konferans görüşmesi olarak birleştirilemiyor."</string>
     <string name="incall_error_supp_service_reject" msgid="7055164130563826216">"Çağrı reddedilemiyor."</string>
     <string name="incall_error_supp_service_hangup" msgid="7417583238334762737">"Çağrılar serbest bırakılamıyor."</string>
+    <string name="incall_call_type_label_sip" msgid="2310958283037924371">"İnternet çağrısı"</string>
     <string name="emergency_enable_radio_dialog_title" msgid="4627849966634578257">"Acil durum çağrısı"</string>
     <string name="emergency_enable_radio_dialog_message" msgid="207613549344420291">"Radyo açılıyor..."</string>
     <string name="emergency_enable_radio_dialog_retry" msgid="3724423402363063736">"Hizmet alanı dışında, tekrar deneniyor..."</string>
@@ -597,4 +607,86 @@
     <string name="slide_to_answer_and_end_onhold" msgid="638748048960663506">"Yanıtlamak ve"\n"beklemedeki çağrıyı sonlandırmak için sağa sürükleyin"</string>
     <string name="slide_to_answer_hint" msgid="4901042355463593903">"Yanıtla"</string>
     <string name="slide_to_decline_hint" msgid="4484576372463030324">"Reddet"</string>
+    <string name="contactPhoto" msgid="4713193418046639466">"kişi fotoğrafı"</string>
+    <string name="goPrivate" msgid="865837794424530980">"özele git"</string>
+    <string name="selectContact" msgid="781975788478987237">"kişi seçin"</string>
+    <string name="sip_settings" msgid="6699045718560859691">"İnternet üzerinden çağrı ayarları"</string>
+    <string name="sip_accounts" msgid="2097054001288457163">"İnternet çağrısı (SIP) hesapları"</string>
+    <string name="sip_accounts_title" msgid="1212889069281054570">"Hesaplar"</string>
+    <string name="sip_accounts_summary" msgid="6812629993146552527">"İnternet çağrısı (SIP) hesaplarını ve durumunu yönet"</string>
+    <string name="sip_receive_calls" msgid="5635685570889971559">"Gelen çağrıları al"</string>
+    <string name="sip_receive_calls_summary" msgid="8403613238633679184">"Pil ömrünü kısaltır"</string>
+    <string name="sip_call_options" msgid="7128315120104066133">"Çağrı seçeneklerini yapılandır"</string>
+    <string name="sip_call_options_title" msgid="27433718808839672">"İnternet çağrısını kullan"</string>
+    <string name="sip_call_options_wifi_only_title" msgid="145572394529090811">"İnternet çağrısı kullan (yalnızca kablosuz)"</string>
+    <string name="sip_call_options_entry_1" msgid="6556668894178520760">"Veri ağı uygun durumdayken yapılan tüm çağrılar için"</string>
+    <string name="sip_call_options_entry_2" msgid="6789764029719494361">"Yalnızca İnternet numaraları için"</string>
+    <string name="sip_call_options_entry_3" msgid="7474809001402649185">"Her çağrı için sor"</string>
+    <string name="sip_call_options_wifi_only_entry_1" msgid="7423523864471650069">"Tüm çağrılar için"</string>
+    <string name="auto_reg" msgid="8150163311655081599">"Otomatik kayıt"</string>
+    <string name="call_priority" msgid="8374917577270504387">"SIP üzerinden giden çağrı"</string>
+    <string name="pick_outgoing_call_phone_type" msgid="5622916534828338675">"Çağrı yap"</string>
+    <string name="pick_outgoing_sip_phone" msgid="7012322118236208875">"İnternet çağrısı hesabını kullan:"</string>
+    <string name="remember_my_choice" msgid="7058059586169290705">"Her zaman İnternet çağrıları yapmak için kullan"</string>
+    <string name="reset_my_choice_hint" msgid="8522825056755061594">"Çağrı yaparken varsayılan olarak kullanılacak İnternet çağrısı hesabını, İnternet çağrısı ayarları altında farklı bir hesap seçerek değiştirmek için Çağrı Ayarları\'nı kullanın"</string>
+    <string name="pstn_phone" msgid="8782554491484326429">"Cep telefonu çağrısı"</string>
+    <string name="internet_phone" msgid="1147922660195095810">"İnternet çağrısı"</string>
+    <string name="no_sip_account_found_title" msgid="6266249392379373628">"İnternet çağrısı hesabı yok"</string>
+    <string name="no_sip_account_found" msgid="8777818244108212791">"Bu telefonda herhangi bir İnternet çağrısı hesabı yok. Şimdi eklensin mi?"</string>
+    <string name="sip_menu_add" msgid="8757508498518881500">"Ekle"</string>
+    <string name="add_sip_account" msgid="5904858426290097611">"Hesap ekle"</string>
+    <string name="remove_sip_account" msgid="7645900420385682570">"Hesabı kaldır"</string>
+    <string name="sip_account_list" msgid="5480058210652194306">"SIP hesapları"</string>
+    <string name="saving_account" msgid="7468818916695729968">"Hesap kaydediliyor..."</string>
+    <string name="removing_account" msgid="5569334415898924904">"Hesap kaldırılıyor..."</string>
+    <string name="sip_menu_save" msgid="5842531129356014943">"Kaydet"</string>
+    <string name="sip_menu_discard" msgid="524075892158789701">"Sil"</string>
+    <string name="alert_dialog_close" msgid="7759635137627626235">"Profili kapat"</string>
+    <string name="alert_dialog_ok" msgid="3580379406983564080">"Tamam"</string>
+    <string name="close_profile" msgid="6886968271423155284">"Kapat"</string>
+    <string name="primary_account" msgid="2229538308291934245">"Birincil"</string>
+    <string name="primary_account_title" msgid="5694267218020951531">"Bunu birincil hesabım yap"</string>
+    <string name="primary_account_summary" msgid="7339564526372623187">"Giden çağrılar için kullanılır"</string>
+    <string name="advanced_settings_title" msgid="8846648727128452293">"Gelişmiş ayarlar"</string>
+    <string name="primary_account_summary_with" msgid="1633960536212343187">"Birincil hesap. <xliff:g id="REGISTRATION_STATUS">%s</xliff:g>"</string>
+    <string name="registration_status_checking_status" msgid="3381868307694056727">"Durum denetleniyor..."</string>
+    <string name="registration_status_registering" msgid="7115694971025999516">"Kaydettiriliyor..."</string>
+    <string name="registration_status_still_trying" msgid="1471733478935862864">"Denemeye devam ediliyor..."</string>
+    <string name="registration_status_not_receiving" msgid="5011399017106466965">"Çağrıları almıyor"</string>
+    <string name="registration_status_no_data" msgid="8279587001454092132">"İnternet bağlantısı olmadığı için hesap kaydı durduruldu"</string>
+    <string name="registration_status_no_wifi_data" msgid="6698550648571450078">"Kablosuz bağlantı hesap kayıt işlemi durduruldu"</string>
+    <string name="registration_status_not_running" msgid="272678962440371182">"Hesap kaydı başarısız oldu"</string>
+    <string name="registration_status_done" msgid="6434927607037752239">"Çağrıları alıyor"</string>
+    <string name="registration_status_failed_try_later" msgid="3045686593819835879">"Hesap kaydı başarısız oldu: (<xliff:g id="REGISTRATION_ERROR_MESSAGE">%s</xliff:g>); daha sonra tekrar denenecek"</string>
+    <string name="registration_status_invalid_credentials" msgid="1830368411591265203">"Hesap kaydı başarısız oldu: Yanlış kullanıcı adı veya şifre"</string>
+    <string name="registration_status_server_unreachable" msgid="8173553259218123653">"Hesap kaydı başarısız oldu: Lütfen sunucu adını kontrol edin"</string>
+    <string name="third_party_account_summary" msgid="1069915789382987226">"Bu hesap şu anda <xliff:g id="ACCOUNT_OWNER">%s</xliff:g> uygulaması tarafından kullanılıyor"</string>
+    <string name="sip_edit_title" msgid="489288416435014385">"SIP hesabı ayrıntıları"</string>
+    <string name="sip_edit_new_title" msgid="3659149255856520385">"SIP hesabı ayrıntıları"</string>
+    <string name="domain_address_title" msgid="9071787581316160480">"Sunucu"</string>
+    <string name="username_title" msgid="2479375923477682328">"Kullanıcı adı"</string>
+    <string name="password_title" msgid="3323555249068171531">"Şifre"</string>
+    <string name="display_name_title" msgid="2459768196312249937">"Görüntülenen ad"</string>
+    <string name="proxy_address_title" msgid="4828301345351614273">"Giden proxy adresi"</string>
+    <string name="port_title" msgid="5952939408078626657">"Bağlantı noktası numarası"</string>
+    <string name="transport_title" msgid="8253139511847746640">"Aktarım türü"</string>
+    <string name="send_keepalive_title" msgid="7533342573918645113">"Canlı tutma mesajı gönder"</string>
+    <string name="send_keepalive_summary" msgid="9038969409950960640">"SIP canlı tutma mesajları gönder"</string>
+    <string name="auto_registration_title" msgid="3586777375420122154">"Otomatik kayıt"</string>
+    <string name="auto_registration_summary" msgid="2522794041206619280">"Profili otomatik olarak kaydet"</string>
+    <string name="set_primary_title" msgid="5351892327447571451">"Birincil hesap olarak ayarla"</string>
+    <string name="set_primary_summary" msgid="2219064654523258577">"Giden çağrılar için kullanılır"</string>
+    <string name="advanced_settings" msgid="8350631795335495338">"İsteğe bağlı ayarlar"</string>
+    <string name="default_preference_summary" msgid="868766740121667450">"&lt;Ayarlanmadı&gt;"</string>
+    <string name="display_name_summary" msgid="8636377460518225523">"&lt;Kullanıcı adıyla aynı&gt;"</string>
+    <string name="optional_summary" msgid="1464058793789832411">"&lt;İsteğe bağlı&gt;"</string>
+    <string name="advanced_settings_show" msgid="4668880308290857597">"▷ Tümünü göstermek için dokunun"</string>
+    <string name="advanced_settings_hide" msgid="217398292824758079">"▽ Tümünü gizlemek için dokunun"</string>
+    <string name="empty_alert" msgid="8177828109581557940">"<xliff:g id="INPUT_FIELD_NAME">%s</xliff:g> gerekli, bu alan boş bırakılamaz"</string>
+    <string name="not_a_valid_port" msgid="5750410768271782606">"Bağlantı noktası numarası 1000 ile 65534 arasında olmalıdır"</string>
+    <string name="no_internet_available_title" msgid="3327109242858406165">"İnternet bağlantısı yok"</string>
+    <string name="no_wifi_available_title" msgid="747881033089378758">"Kablosuz bağlantı yok"</string>
+    <string name="no_internet_available" msgid="1100564991026313234">"İnternet çağrısı yapmak için öncelikle İnternet bağlantınızı denetleyin"</string>
+    <string name="no_wifi_available" msgid="3389743006886634541">"İnternet çağrıları için bir Kablosuz ağa bağlı olmalısınız (Kablosuz ve Ağ ayarlarını kullanın)"</string>
+    <string name="no_voip" msgid="8901474054537199865">"İnternet çağrısı desteklenmiyor"</string>
 </resources>

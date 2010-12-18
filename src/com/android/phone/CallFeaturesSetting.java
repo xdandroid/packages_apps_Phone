@@ -29,6 +29,8 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.media.AudioManager;
+import android.net.sip.SipManager;
+import android.net.sip.SipProfile;
 import android.os.AsyncResult;
 import android.os.Bundle;
 import android.os.Handler;
@@ -37,6 +39,7 @@ import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
 import android.provider.Settings;
 import android.provider.ContactsContract.CommonDataKinds;
@@ -51,6 +54,7 @@ import com.android.internal.telephony.CommandsInterface;
 import com.android.internal.telephony.Phone;
 import com.android.internal.telephony.PhoneFactory;
 import com.android.internal.telephony.cdma.TtyIntent;
+import com.android.phone.sip.SipSharedPreferences;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -129,6 +133,13 @@ public class CallFeaturesSetting extends PreferenceActivity
 
     private static final String VM_NUMBERS_SHARED_PREFERENCES_NAME = "vm_numbers";
 
+    private static final String BUTTON_SIP_CALL_OPTIONS =
+            "sip_call_options_key";
+    private static final String BUTTON_SIP_CALL_OPTIONS_WIFI_ONLY =
+            "sip_call_options_wifi_only_key";
+    private static final String SIP_SETTINGS_CATEGORY_KEY =
+            "sip_settings_category_key";
+
     private Intent mContactListIntent;
 
     /** Event for Async voicemail change call */
@@ -155,6 +166,7 @@ public class CallFeaturesSetting extends PreferenceActivity
     private Phone mPhone;
 
     private AudioManager mAudioManager;
+    private SipManager mSipManager;
 
     private static final int VM_NOCHANGE_ERROR = 400;
     private static final int VM_RESPONSE_ERROR = 500;
@@ -184,8 +196,10 @@ public class CallFeaturesSetting extends PreferenceActivity
     private CheckBoxPreference mButtonHAC;
     private ListPreference mButtonDTMF;
     private ListPreference mButtonTTY;
+    private ListPreference mButtonSipCallOptions;
     private ListPreference mVoicemailProviders;
     private PreferenceScreen mVoicemailSettings;
+    private SipSharedPreferences mSipSharedPreferences;
 
     private class VoiceMailProvider {
         public VoiceMailProvider(String name, Intent intent) {
@@ -464,6 +478,8 @@ public class CallFeaturesSetting extends PreferenceActivity
                 mChangingVMorFwdDueToProviderChange = true;
                 saveVoiceMailAndForwardingNumber(newProviderKey, newProviderSettings);
             }
+        } else if (preference == mButtonSipCallOptions) {
+            handleSipCallOptionsChange(objValue);
         }
         // always let the preference setting proceed.
         return true;
@@ -530,7 +546,7 @@ public class CallFeaturesSetting extends PreferenceActivity
         if (mPreviousVMProviderKey != null) {
             if (mVMChangeCompletedSuccesfully || mFwdChangesRequireRollback) {
                 // we have to revert with carrier
-                showDialog(VOICEMAIL_REVERTING_DIALOG);
+                showDialogIfForeground(VOICEMAIL_REVERTING_DIALOG);
                 VoiceMailProviderSettings prevSettings =
                     loadSettingsForVoiceMailProvider(mPreviousVMProviderKey);
                 if (mVMChangeCompletedSuccesfully) {
@@ -690,6 +706,31 @@ public class CallFeaturesSetting extends PreferenceActivity
                         FWD_SETTINGS_DONT_TOUCH));
     }
 
+
+    /**
+     * Wrapper around showDialog() that will silently do nothing if we're
+     * not in the foreground.
+     *
+     * This is useful here because most of the dialogs we display from
+     * this class are triggered by asynchronous events (like
+     * success/failure messages from the telephony layer) and it's
+     * possible for those events to come in even after the user has gone
+     * to a different screen.
+     */
+    // TODO: this is too brittle: it's still easy to accidentally add new
+    // code here that calls showDialog() directly (which will result in a
+    // WindowManager$BadTokenException if called after the activity has
+    // been stopped.)
+    //
+    // It would be cleaner to do the "if (mForeground)" check in one
+    // central place, maybe by using a single Handler for all asynchronous
+    // events (and have *that* discard events if we're not in the
+    // foreground.)
+    //
+    // Unfortunately it's not that simple, since we sometimes need to do
+    // actual work to handle these events whether or not we're in the
+    // foreground (see the Handler code in mSetOptionComplete for
+    // example.)
     private void showDialogIfForeground(int id) {
         if (mForeground) {
             showDialog(id);
@@ -1411,12 +1452,57 @@ public class CallFeaturesSetting extends PreferenceActivity
         }
         updateVoiceNumberField();
         mVMProviderSettingsForced = false;
+        createSipCallSettings();
+    }
+
+    private void createSipCallSettings() {
+        // Add Internet call settings.
+        if (SipManager.isVoipSupported(this)) {
+            mSipManager = SipManager.newInstance(this);
+            mSipSharedPreferences = new SipSharedPreferences(this);
+            addPreferencesFromResource(R.xml.sip_settings_category);
+            mButtonSipCallOptions = getSipCallOptionPreference();
+            mButtonSipCallOptions.setOnPreferenceChangeListener(this);
+            mButtonSipCallOptions.setValueIndex(
+                    mButtonSipCallOptions.findIndexOfValue(
+                            mSipSharedPreferences.getSipCallOption()));
+            mButtonSipCallOptions.setSummary(mButtonSipCallOptions.getEntry());
+        }
+    }
+
+    // Gets the call options for SIP depending on whether SIP is allowed only
+    // on Wi-Fi only; also make the other options preference invisible.
+    private ListPreference getSipCallOptionPreference() {
+        ListPreference wifiAnd3G = (ListPreference)
+                findPreference(BUTTON_SIP_CALL_OPTIONS);
+        ListPreference wifiOnly = (ListPreference)
+                findPreference(BUTTON_SIP_CALL_OPTIONS_WIFI_ONLY);
+        PreferenceGroup sipSettings = (PreferenceGroup)
+                findPreference(SIP_SETTINGS_CATEGORY_KEY);
+        if (SipManager.isSipWifiOnly(this)) {
+            sipSettings.removePreference(wifiAnd3G);
+            return wifiOnly;
+        } else {
+            sipSettings.removePreference(wifiOnly);
+            return wifiAnd3G;
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         mForeground = true;
+
+        if (isAirplaneModeOn()) {
+            Preference sipSettings = findPreference(SIP_SETTINGS_CATEGORY_KEY);
+            PreferenceScreen screen = getPreferenceScreen();
+            int count = screen.getPreferenceCount();
+            for (int i = 0 ; i < count ; ++i) {
+                Preference pref = screen.getPreference(i);
+                if (pref != sipSettings) pref.setEnabled(false);
+            }
+            return;
+        }
 
         if (mButtonDTMF != null) {
             int dtmf = Settings.System.getInt(getContentResolver(),
@@ -1442,6 +1528,11 @@ public class CallFeaturesSetting extends PreferenceActivity
             mButtonTTY.setValue(Integer.toString(settingsTtyMode));
             updatePreferredTtyModeSummary(settingsTtyMode);
         }
+    }
+
+    private boolean isAirplaneModeOn() {
+        return Settings.System.getInt(getContentResolver(),
+                Settings.System.AIRPLANE_MODE_ON, 0) != 0;
     }
 
     private void handleTTYChange(Preference preference, Object objValue) {
@@ -1472,6 +1563,14 @@ public class CallFeaturesSetting extends PreferenceActivity
             ttyModeChanged.putExtra(TtyIntent.TTY_PREFFERED_MODE, buttonTtyMode);
             sendBroadcast(ttyModeChanged);
         }
+    }
+
+    private void handleSipCallOptionsChange(Object objValue) {
+        String option = objValue.toString();
+        mSipSharedPreferences.setSipCallOption(option);
+        mButtonSipCallOptions.setValueIndex(
+                mButtonSipCallOptions.findIndexOfValue(option));
+        mButtonSipCallOptions.setSummary(mButtonSipCallOptions.getEntry());
     }
 
     private void updatePreferredTtyModeSummary(int TtyMode) {
@@ -1664,7 +1763,7 @@ public class CallFeaturesSetting extends PreferenceActivity
         } else {
             editor.putInt(fwdKey + FWD_SETTINGS_LENGTH_TAG, 0);
         }
-        editor.commit();
+        editor.apply();
     }
 
     /**

@@ -72,6 +72,9 @@
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.SHUTDOWN" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.BACKUP" />
+    <uses-permission android:name="android.permission.USE_SIP" />
 
     <!-- This tells the activity manager to not delay any of our activity
          start requests, even if they happen immediately after the user
@@ -129,6 +132,11 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:scheme="tel" />
             </intent-filter>
+            <intent-filter android:icon="@drawable/ic_launcher_sip_call">
+                <action android:name="android.intent.action.CALL" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="sip" />
+            </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.CALL" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -152,6 +160,11 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:scheme="tel" />
             </intent-filter>
+            <intent-filter android:icon="@drawable/ic_launcher_sip_call">
+                <action android:name="android.intent.action.CALL_EMERGENCY" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="sip" />
+            </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.CALL_EMERGENCY" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -173,6 +186,11 @@
                 <action android:name="android.intent.action.CALL_PRIVILEGED" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:scheme="tel" />
+            </intent-filter>
+            <intent-filter android:icon="@drawable/ic_launcher_sip_call">
+                <action android:name="android.intent.action.CALL_PRIVILEGED" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="sip" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.CALL_PRIVILEGED" />
@@ -202,7 +220,7 @@
             android:excludeFromRecents="true"
             android:launchMode="singleInstance"
             android:screenOrientation="portrait"
-            android:configChanges="orientation|keyboardHidden"
+            android:configChanges="orientation|keyboardHidden|uiMode"
             android:exported="false">
         </activity>
 
@@ -393,6 +411,31 @@
                 <action android:name="android.intent.action.ACTION_SHOW_NOTICE_ECM_BLOCK_OTHERS" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+        </activity>
+
+        <receiver android:name="SipBroadcastReceiver">
+            <intent-filter>
+                <action android:name="com.android.phone.SIP_INCOMING_CALL" />
+                <action android:name="com.android.phone.SIP_ADD_PHONE" />
+                <action android:name="com.android.phone.SIP_REMOVE_PHONE" />
+                <action android:name="android.net.sip.SIP_SERVICE_UP" />
+            </intent-filter>
+        </receiver>
+
+        <activity android:label="Sip Settings"
+                  android:name=".sip.SipSettings"
+                  android:launchMode="singleTop"
+                  android:configChanges="orientation|keyboardHidden">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.net.sip.NOTIFY" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".sip.SipEditor"
+                android:configChanges="orientation|keyboardHidden">
+        </activity>
+        <activity android:name=".SipCallOptionHandler"
+                android:configChanges="orientation|keyboardHidden">
         </activity>
 
     </application>
