@@ -35,6 +35,7 @@ import android.os.AsyncResult;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemProperties;
 import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -1409,7 +1410,7 @@ public class CallFeaturesSetting extends PreferenceActivity
             }
         }
 
-        if (!getResources().getBoolean(R.bool.world_phone)) {
+        if (!Boolean.parseBoolean(SystemProperties.get("ro.ril.world_phone"))) {
             Preference options = prefSet.findPreference(BUTTON_CDMA_OPTIONS);
             if (options != null)
                 prefSet.removePreference(options);

@@ -182,7 +182,7 @@ public class Settings extends PreferenceActivity implements DialogInterface.OnCl
                 BUTTON_PREFERED_NETWORK_MODE);
         mButtonDataUsage = prefSet.findPreference(BUTTON_DATA_USAGE_KEY);
 
-        if (getResources().getBoolean(R.bool.world_phone) == true) {
+        if (Boolean.parseBoolean(SystemProperties.get("ro.ril.world_phone"))) {
             // set the listener for the mButtonPreferredNetworkMode list preference so we can issue
             // change Preferred Network Mode.
             mButtonPreferredNetworkMode.setOnPreferenceChangeListener(this);
