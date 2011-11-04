@@ -185,19 +185,6 @@ public class CallNotifier extends Handler
 
         registerForNotifications();
 
-        // Instantiate the ToneGenerator for SignalInfo and CallWaiting
-        // TODO: We probably don't need the mSignalInfoToneGenerator instance
-        // around forever. Need to change it so as to create a ToneGenerator instance only
-        // when a tone is being played and releases it after its done playing.
-        try {
-            mSignalInfoToneGenerator = new ToneGenerator(AudioManager.STREAM_VOICE_CALL,
-                    TONE_RELATIVE_VOLUME_SIGNALINFO);
-        } catch (RuntimeException e) {
-            Log.w(LOG_TAG, "CallNotifier: Exception caught while creating " +
-                    "mSignalInfoToneGenerator: " + e);
-            mSignalInfoToneGenerator = null;
-        }
-
         mRinger = ringer;
         mBluetoothHandsfree = btMgr;
 
@@ -842,6 +829,19 @@ public class CallNotifier extends Handler
         mCM.registerForInCallVoicePrivacyOff(this, PHONE_ENHANCED_VP_OFF, null);
         mCM.registerForRingbackTone(this, PHONE_RINGBACK_TONE, null);
         mCM.registerForResendIncallMute(this, PHONE_RESEND_MUTE, null);
+
+        // Instantiate the ToneGenerator for SignalInfo and CallWaiting
+        // TODO: We probably don't need the mSignalInfoToneGenerator instance
+        // around forever. Need to change it so as to create a ToneGenerator instance only
+        // when a tone is being played and releases it after its done playing.
+        try {
+            mSignalInfoToneGenerator = new ToneGenerator(AudioManager.STREAM_VOICE_CALL,
+                    TONE_RELATIVE_VOLUME_SIGNALINFO);
+        } catch (RuntimeException e) {
+            Log.w(LOG_TAG, "CallNotifier: Exception caught while creating " +
+                    "mSignalInfoToneGenerator: " + e);
+            mSignalInfoToneGenerator = null;
+        }
     }
 
     /**
